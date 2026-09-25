@@ -1,0 +1,2595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Anton Ref"/>
+<meta name="theme-color" content="#1B4F8A"/>
+<meta name="description" content="App técnica para refrigeración y aire acondicionado — Anton Company"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<title>Anton Refrigerantes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f6fa;color:#1a2133;}
+
+  :root{
+    --anton:#1B4F8A; --anton-d:#163d6d; --anton-l:#e8eef8;
+    --text:#1a2133; --sub:#6b7694; --border:#e4e8f2;
+    --card:#fff; --bg:#f4f6fa; --radius:14px;
+    --shadow:0 2px 12px rgba(27,79,138,0.07);
+    --shadow-sm:0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  /* ── App shell ── */
+  .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;}
+
+  /* ── Header ── */
+  .header{background:linear-gradient(135deg,#1a4a80 0%,#1B4F8A 60%,#2266b0 100%);color:#fff;
+    padding:16px 18px 14px;display:flex;align-items:center;gap:12px;
+    position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(27,79,138,0.25);}
+  .header-title{font-size:17px;font-weight:700;letter-spacing:-0.2px;line-height:1.2;}
+  .header-sub{font-size:11px;opacity:0.65;letter-spacing:0.5px;margin-top:1px;}
+  .back-btn{background:rgba(255,255,255,0.18);border:none;color:#fff;width:36px;height:36px;
+    border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .back-btn:active{background:rgba(255,255,255,0.3);}
+
+  /* ── Tab nav ── */
+  .nav{display:flex;background:#fff;border-top:1px solid var(--border);
+    position:sticky;bottom:0;z-index:100;overflow-x:auto;scrollbar-width:none;}
+  .nav::-webkit-scrollbar{display:none;}
+  .nav-item{flex:0 0 auto;min-width:56px;padding:8px 4px 6px;display:flex;flex-direction:column;
+    align-items:center;gap:2px;cursor:pointer;border:none;background:none;color:var(--sub);
+    font-size:10px;font-weight:500;transition:color .18s;position:relative;}
+  .nav-item.active{color:var(--anton);}
+  .nav-item.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2.5px;
+    background:var(--anton);border-radius:0 0 3px 3px;}
+  .nav-icon{font-size:20px;line-height:1;}
+
+  /* ── Content area ── */
+  .content{flex:1;overflow-y:auto;padding-bottom:72px;}
+
+  /* ── Search bar ── */
+  .search-bar{padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;}
+  .search-wrap{position:relative;}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.4;pointer-events:none;}
+  .search-input{width:100%;padding:10px 14px 10px 36px;border:1.5px solid var(--border);
+    border-radius:22px;font-size:14px;background:#f8f9fc;outline:none;transition:border .2s;color:var(--text);}
+  .search-input:focus{border-color:var(--anton);background:#fff;}
+
+  /* ── Filter chips ── */
+  .filter-row{display:flex;gap:7px;padding:10px 16px 8px;overflow-x:auto;scrollbar-width:none;background:#fff;}
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);
+    background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--sub);transition:all .18s;}
+  .filter-chip.active{background:var(--anton);border-color:var(--anton);color:#fff;box-shadow:0 2px 8px rgba(27,79,138,0.25);}
+
+  /* ── Category divider ── */
+  .divider{font-size:11px;color:var(--sub);font-weight:700;text-transform:uppercase;
+    letter-spacing:1px;padding:16px 16px 6px;display:flex;align-items:center;gap:8px;}
+  .divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* ── Gas card ── */
+  .gas-card{background:var(--card);margin:5px 12px;border-radius:var(--radius);
+    padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;
+    border:1.5px solid var(--border);box-shadow:var(--shadow-sm);transition:all .18s;}
+  .gas-card:active,.gas-card:hover{border-color:var(--anton);box-shadow:0 4px 16px rgba(27,79,138,0.12);}
+
+  /* ── Gas badge (category pill) ── */
+  .gas-badge{min-width:50px;height:50px;border-radius:12px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;
+    text-align:center;flex-shrink:0;line-height:1.3;gap:1px;letter-spacing:0.3px;}
+  .gas-badge-id{font-size:13px;font-weight:900;line-height:1;}
+  .badge-HFC{background:linear-gradient(145deg,#1B4F8A,#2266b0);}
+  .badge-HFO{background:linear-gradient(145deg,#0a7e4f,#12a367);}
+  .badge-Blend{background:linear-gradient(145deg,#7b3fa0,#9b52c8);}
+  .badge-HC{background:linear-gradient(145deg,#b85c00,#d97200);}
+  .badge-HCFC{background:linear-gradient(145deg,#888,#aaa);}
+
+  .gas-info{flex:1;min-width:0;}
+  .gas-name{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.2px;}
+  .gas-anton{font-size:11px;color:var(--anton);font-weight:600;margin-top:1px;}
+  .gas-desc{font-size:12px;color:var(--sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;}
+  .gas-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+
+  /* ── GWP badge ── */
+  .gwp-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;letter-spacing:0.2px;}
+  .gwp-low{background:#e0f5e9;color:#1a7a3a;}
+  .gwp-mid{background:#fff3dc;color:#8a5500;}
+  .gwp-high{background:#ffe6e6;color:#c0392b;}
+
+  /* ── ASHRAE safety badge ── */
+  .safety-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;}
+  .safety-A1{background:#e0f5e9;color:#1a7a3a;}
+  .safety-A2L{background:#fff3dc;color:#8a5500;}
+  .safety-A3{background:#ffe6e6;color:#c0392b;}
+
+  /* ── Gas Detail ── */
+  .detail-hero{background:linear-gradient(145deg,#163d6d,#1B4F8A 50%,#2060a0);color:#fff;padding:20px 18px 26px;}
+  .detail-name{font-size:28px;font-weight:900;letter-spacing:-0.8px;}
+  .detail-sub{font-size:13px;opacity:0.65;margin-top:4px;letter-spacing:0.2px;}
+  .detail-anton-badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);
+    padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-top:8px;letter-spacing:0.3px;}
+  .chips-row{display:flex;flex-wrap:wrap;gap:7px;padding:14px 14px 6px;}
+  .chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+  .chip-green{background:#e0f5e9;color:#1a7a3a;}
+  .chip-warn{background:#fff3dc;color:#8a5500;}
+  .chip-danger{background:#ffe6e6;color:#c0392b;}
+  .chip-neutral{background:#f0f2f8;color:#555;}
+  .chip-blue{background:var(--anton-l);color:var(--anton);}
+
+  /* ── Sections ── */
+  .section{margin:10px 12px;background:var(--card);border-radius:var(--radius);
+    overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+  .section-header{padding:11px 15px;background:var(--anton-l);font-size:11px;font-weight:800;
+    color:var(--anton);letter-spacing:0.8px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+  .section-body{padding:14px 15px;}
+  .desc-text{font-size:14px;line-height:1.65;color:var(--text);}
+  .oil-box{background:#f8f9fc;border-radius:10px;padding:12px 14px;margin-top:8px;border:1px solid var(--border);}
+  .oil-label{font-size:10px;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;}
+  .oil-val{font-size:14px;font-weight:700;color:var(--text);}
+  .oil-nota{font-size:12px;color:var(--sub);margin-top:6px;line-height:1.55;}
+  .warn-box{background:#fff8e6;border:1px solid #f0c040;border-radius:10px;
+    padding:11px 14px;margin-top:10px;font-size:13px;font-weight:600;color:#7a4a00;display:flex;gap:8px;align-items:flex-start;}
+
+  /* ── PT Table ── */
+  .pt-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .pt-table th{background:var(--anton);color:#fff;padding:9px 12px;text-align:center;font-weight:700;font-size:12px;}
+  .pt-table td{padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);}
+  .pt-table tr:last-child td{border-bottom:none;}
+  .pt-table tr:nth-child(even) td{background:#f8f9fc;}
+  .pt-table tr:hover td{background:var(--anton-l);}
+  .chart-area{padding:12px 8px 6px;}
+  .chart-svg{width:100%;display:block;}
+
+  /* ── Comparison ── */
+  .cmp-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .cmp-table th{background:var(--anton-l);padding:9px 6px;text-align:center;font-weight:700;font-size:11px;color:var(--anton);border-bottom:1px solid var(--border);}
+  .cmp-table td{padding:7px 6px;border-bottom:1px solid var(--border);}
+  .row-label{text-align:left;font-size:11px;color:var(--sub);font-weight:600;padding-left:12px;}
+  .cmp-table tr:last-child td{border-bottom:none;}
+
+  /* ── Simulator cards ── */
+  .sim-card{background:var(--card);margin:10px 12px;border-radius:var(--radius);
+    padding:15px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+  .sim-label{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+  .sim-input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;
+    font-size:15px;outline:none;color:var(--text);background:#fafbfd;transition:border .2s;}
+  .sim-input:focus{border-color:var(--anton);}
+  .sim-result{background:linear-gradient(135deg,#163d6d,#1B4F8A);color:#fff;
+    border-radius:var(--radius);padding:16px;text-align:center;margin:10px 12px;box-shadow:var(--shadow);}
+  .sim-result-label{font-size:12px;opacity:0.75;margin-bottom:3px;}
+  .sim-result-val{font-size:30px;font-weight:900;line-height:1;}
+  .sim-result-unit{font-size:13px;opacity:0.75;margin-top:2px;}
+
+  /* ── SH/SC ── */
+  .diagnosis-box{border-radius:10px;padding:11px 14px;margin-top:10px;font-size:13px;font-weight:600;line-height:1.55;}
+  .diag-ok{background:#e0f5e9;color:#1a7a3a;}
+  .diag-warn{background:#fff3dc;color:#8a5500;}
+  .diag-danger{background:#ffe6e6;color:#c0392b;}
+
+  /* ── Carnot ── */
+  .carnot-panel{background:var(--card);margin:10px 12px;border-radius:var(--radius);
+    border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm);}
+  .carnot-panel-header{background:var(--anton-l);padding:11px 15px;font-size:11px;
+    font-weight:800;color:var(--anton);text-transform:uppercase;letter-spacing:0.7px;border-bottom:1px solid var(--border);}
+  .cop-row{display:flex;gap:8px;padding:12px 14px;}
+  .cop-cell{flex:1;text-align:center;background:#f8f9fc;border-radius:10px;padding:12px 6px;border:1px solid var(--border);}
+  .cop-lbl{font-size:10px;color:var(--sub);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;}
+  .cop-val{font-size:22px;font-weight:900;color:var(--anton);}
+  .cop-sub{font-size:10px;color:var(--sub);margin-top:2px;}
+  .carnot-temp-row{display:flex;gap:8px;padding:12px 14px;}
+  .carnot-temp-box{flex:1;background:linear-gradient(135deg,#163d6d,#1B4F8A);color:#fff;border-radius:12px;padding:12px;text-align:center;}
+  .carnot-temp-val{font-size:22px;font-weight:900;}
+  .carnot-temp-lbl{font-size:10px;opacity:0.7;margin-top:2px;}
+  .carnot-arrow{align-self:center;font-size:22px;opacity:0.5;}
+  .carnot-pressure-row{display:flex;gap:8px;padding:10px 14px;background:#f8f9fc;border-top:1px solid var(--border);}
+  .carnot-pres-item{flex:1;text-align:center;}
+  .carnot-pres-val{font-size:16px;font-weight:800;color:var(--anton);}
+  .carnot-pres-label{font-size:10px;color:var(--sub);}
+  .cop-bar-wrap{padding:10px 15px 14px;}
+  .cop-bar-label{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;}
+  .cop-bar-track{background:var(--anton-l);border-radius:6px;height:10px;overflow:hidden;}
+  .cop-bar-fill{height:100%;border-radius:6px;background:var(--anton);}
+  .cop-bar-fill.real{background:#0a7e4f;}
+
+  /* ── Ciclo ── */
+  .num-input-wrap{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;}
+  .num-btn{background:#f4f6fa;border:none;color:var(--anton);font-size:20px;font-weight:700;
+    width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .num-btn:active{background:var(--anton-l);}
+  .num-field{border:none;outline:none;text-align:center;font-size:16px;font-weight:700;color:var(--text);
+    flex:1;height:40px;background:transparent;min-width:0;}
+
+  /* ── Teoria ── */
+  .teoria-card{background:var(--card);margin:8px 12px;border-radius:var(--radius);
+    border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm);}
+  .teoria-header{padding:14px 15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;gap:10px;}
+  .teoria-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.3;flex:1;}
+  .teoria-badge{font-size:10px;padding:3px 9px;border-radius:8px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+  .teoria-body{padding:0 15px 15px;}
+  .teoria-quick{background:var(--anton-l);border-radius:10px;padding:11px 13px;margin-bottom:10px;border:1px solid var(--border);}
+  .teoria-quick-label{font-size:10px;font-weight:800;color:var(--anton);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;}
+  .teoria-quick-text{font-size:13px;color:var(--text);line-height:1.6;}
+  .teoria-deep{font-size:13px;color:var(--sub);line-height:1.7;}
+  .teoria-formula{background:#1a2133;color:#e0eaff;border-radius:10px;padding:11px 14px;
+    font-family:'SF Mono',Menlo,monospace;font-size:12px;margin:8px 0;line-height:1.6;}
+  .teoria-ref-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .teoria-ref{font-size:11px;padding:3px 10px;border-radius:8px;background:var(--anton-l);color:var(--anton);font-weight:600;}
+
+  /* ── Aplicación screen ── */
+  .app-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 12px;}
+  .app-cat-card{background:var(--card);border-radius:var(--radius);padding:18px 14px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+    border:1.5px solid var(--border);box-shadow:var(--shadow-sm);transition:all .18s;}
+  .app-cat-card:active,.app-cat-card:hover{border-color:var(--anton);transform:translateY(-1px);box-shadow:var(--shadow);}
+  .app-cat-icon{font-size:32px;line-height:1;}
+  .app-cat-name{font-size:13px;font-weight:700;color:var(--text);}
+  .app-cat-count{font-size:11px;color:var(--sub);}
+
+  /* ── Misc ── */
+  .empty{text-align:center;padding:52px 24px;color:var(--sub);}
+  .empty-icon{font-size:44px;margin-bottom:12px;}
+  .empty-text{font-size:14px;line-height:1.6;}
+
+  /* ── Biblioteca ── */
+  .bib-header{padding:16px 16px 0;}
+  .bib-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:2px;}
+  .bib-sub{font-size:12px;color:var(--sub);margin-bottom:12px;}
+  .bib-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    margin:0 12px 10px;padding:14px 14px 12px;box-shadow:var(--shadow-sm);}
+  .bib-gas-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .bib-gas-name{font-size:14px;font-weight:700;color:var(--text);flex:1;}
+  .bib-gas-sub{font-size:11px;color:var(--sub);}
+  .bib-docs{display:flex;gap:8px;flex-wrap:wrap;}
+  .bib-doc-btn{
+    display:flex;align-items:center;gap:6px;
+    padding:7px 12px;border-radius:8px;border:none;cursor:pointer;
+    font-size:12px;font-weight:600;text-decoration:none;
+    transition:opacity .15s,transform .1s;
+  }
+  .bib-doc-btn:active{opacity:.8;transform:scale(.97);}
+  .bib-doc-sds{background:#e8f0fb;color:#1B4F8A;}
+  .bib-doc-traslado{background:#e8f5ed;color:#1a7a3a;}
+  .bib-doc-catalogo{background:#f3eafb;color:#6b21a8;}
+  .bib-doc-na{background:#f0f0f2;color:#aaa;cursor:default;}
+  .bib-pill{font-size:9px;background:rgba(255,255,255,0.7);
+    border-radius:4px;padding:1px 5px;color:inherit;font-weight:700;letter-spacing:.3px;}
+
+  /* ── Auth Screens ── */
+  .auth-screen{
+    position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    background:linear-gradient(160deg,#1B4F8A 0%,#0f3060 55%,#091d3e 100%);
+    padding:24px;z-index:9999;
+  }
+  .splash-logo{width:180px;height:auto;filter:brightness(0) invert(1);margin-bottom:16px;animation:fadeUp .8s ease both;}
+  .splash-tagline{color:rgba(255,255,255,0.7);font-size:13px;letter-spacing:2px;text-transform:uppercase;
+    margin-bottom:48px;animation:fadeUp .8s .2s ease both;}
+  .splash-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.4);
+    animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pulse{0%,100%{opacity:.3;transform:scale(.85);}50%{opacity:1;transform:scale(1);}}
+
+  .auth-card{
+    width:100%;max-width:400px;
+    background:rgba(255,255,255,0.07);
+    border:1px solid rgba(255,255,255,0.13);
+    border-radius:20px;padding:32px 28px;
+    backdrop-filter:blur(16px);
+  }
+  .auth-logo{width:130px;height:auto;filter:brightness(0) invert(1);margin:0 auto 24px;display:block;}
+  .auth-title{color:#fff;font-size:20px;font-weight:700;text-align:center;margin-bottom:4px;}
+  .auth-sub{color:rgba(255,255,255,0.55);font-size:13px;text-align:center;margin-bottom:28px;}
+  .auth-field{margin-bottom:16px;}
+  .auth-label{display:block;color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;
+    letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+  .auth-input{
+    width:100%;box-sizing:border-box;
+    background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);
+    border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;outline:none;
+    transition:border-color .2s;
+  }
+  .auth-input::placeholder{color:rgba(255,255,255,0.3);}
+  .auth-input:focus{border-color:rgba(255,255,255,0.45);background:rgba(255,255,255,0.12);}
+  .auth-select{
+    width:100%;box-sizing:border-box;
+    background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);
+    border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;outline:none;
+    appearance:none;-webkit-appearance:none;
+  }
+  .auth-select option{background:#1B4F8A;color:#fff;}
+  .auth-btn{
+    width:100%;padding:13px;border:none;border-radius:10px;
+    background:linear-gradient(135deg,#2b76d4,#1B4F8A);
+    color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+    margin-top:8px;letter-spacing:.3px;
+    transition:opacity .2s,transform .1s;
+  }
+  .auth-btn:active{opacity:.85;transform:scale(.98);}
+  .auth-link{color:rgba(255,255,255,0.55);font-size:13px;text-align:center;
+    margin-top:20px;cursor:pointer;}
+  .auth-link span{color:#7ab4f5;font-weight:600;text-decoration:underline;}
+  .auth-error{
+    background:rgba(220,50,50,0.18);border:1px solid rgba(220,80,80,0.35);
+    border-radius:8px;padding:10px 14px;color:#ffaaaa;font-size:13px;margin-bottom:14px;
+  }
+  .auth-divider{border:none;border-top:1px solid rgba(255,255,255,0.1);margin:20px 0;}
+
+  /* ── Dark Mode ── */
+  html[data-theme='dark']{
+    --bg:#0f1117; --card:#181c28; --text:#e2e8f5; --sub:#7b90bb;
+    --border:#252a3d; --radius:14px; --shadow:0 2px 12px rgba(0,0,0,0.35);
+    --shadow-sm:0 1px 4px rgba(0,0,0,0.25);
+    --anton:#4d8dd4; --anton-d:#3a72bb; --anton-l:#1a2844;
+  }
+  html[data-theme='dark'] .header{background:linear-gradient(135deg,#0e2444 0%,#1a3a6a 100%);}
+  html[data-theme='dark'] .gas-card{background:var(--card);}
+  html[data-theme='dark'] .search-input{background:#1e2436;color:var(--text);border-color:var(--border);}
+  html[data-theme='dark'] .search-input::placeholder{color:var(--sub);}
+  html[data-theme='dark'] .nav{background:#181c28;border-top-color:var(--border);}
+  html[data-theme='dark'] .sim-card,.dark-card{background:var(--card);border-color:var(--border);}
+  html[data-theme='dark'] .auth-screen{background:linear-gradient(160deg,#0e2444 0%,#091629 100%);}
+  html[data-theme='dark'] input,html[data-theme='dark'] select{
+    background:#1e2436;color:var(--text);border-color:var(--border);}
+  html[data-theme='dark'] .search-wrap{background:#1e2436;border-color:var(--border);}
+  html[data-theme='dark'] body{background:var(--bg);color:var(--text);}
+  html[data-theme='dark'] .prod-img-bg{background:#1a1f2e !important;}
+
+  /* ── Dark mode toggle btn ── */
+  .theme-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.75);
+    font-size:18px;padding:4px;line-height:1;flex-shrink:0;}
+  .theme-btn:hover{color:#fff;}
+
+  /* ── User avatar / profile ── */
+  .user-avatar{
+    width:32px;height:32px;border-radius:50%;
+    background:rgba(255,255,255,0.2);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;
+    border:1.5px solid rgba(255,255,255,0.3);position:relative;
+  }
+  .user-menu{
+    position:absolute;top:calc(100% + 8px);right:0;
+    background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);
+    border:1px solid #e4e8f2;min-width:200px;overflow:hidden;z-index:999;
+  }
+  html[data-theme='dark'] .user-menu{background:#1e2436;border-color:#2a3050;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+  .user-menu-header{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--anton-l);}
+  html[data-theme='dark'] .user-menu-header{background:#1a2844;}
+  .user-menu-name{font-size:13px;font-weight:700;color:var(--text);}
+  .user-menu-role{font-size:11px;color:var(--sub);margin-top:2px;}
+  .user-menu-item{
+    display:flex;align-items:center;gap:10px;
+    padding:11px 16px;font-size:13px;color:var(--text);
+    cursor:pointer;border:none;background:none;width:100%;text-align:left;
+    transition:background .15s;
+  }
+  .user-menu-item:hover{background:var(--bg);}
+  .user-menu-item.danger{color:#c0392b;}
+  html[data-theme='dark'] .user-menu-item.danger{color:#ff6b6b;}
+
+  /* ── Carga / Charge Calculator ── */
+  .carga-section{padding:0 14px 12px;}
+  .carga-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm);}
+  .carga-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;}
+  .carga-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .carga-label{font-size:12px;color:var(--sub);font-weight:600;min-width:130px;}
+  .carga-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;
+    padding:8px 12px;font-size:14px;color:var(--text);outline:none;}
+  .carga-input:focus{border-color:var(--anton);}
+  .carga-select{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;
+    padding:8px 12px;font-size:14px;color:var(--text);outline:none;appearance:none;}
+  .carga-result{background:var(--anton);border-radius:var(--radius);padding:16px;color:#fff;text-align:center;}
+  .carga-result-val{font-size:36px;font-weight:800;line-height:1;}
+  .carga-result-unit{font-size:13px;opacity:.8;margin-top:4px;}
+  .carga-result-sub{font-size:12px;opacity:.65;margin-top:8px;}
+  .carga-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+  .carga-mini{background:var(--anton-l);border-radius:10px;padding:12px;text-align:center;}
+  html[data-theme='dark'] .carga-mini{background:#1a2844;}
+  .carga-mini-val{font-size:18px;font-weight:700;color:var(--anton);}
+  .carga-mini-lbl{font-size:11px;color:var(--sub);margin-top:2px;}
+
+  /* ── Unit Toggle ── */
+  .unit-toggle{display:flex;background:var(--bg);border:1px solid var(--border);
+    border-radius:8px;overflow:hidden;margin-left:auto;}
+  .unit-btn{padding:5px 12px;font-size:12px;font-weight:600;border:none;cursor:pointer;
+    background:none;color:var(--sub);transition:all .15s;}
+  .unit-btn.active{background:var(--anton);color:#fff;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const ANTON = '#1B4F8A';
+// ── Dark Mode ─────────────────────────────────────────────────────────────────
+function getTheme(){return localStorage.getItem('anton_theme')||'light';}
+function setTheme(t){
+  localStorage.setItem('anton_theme',t);
+  document.documentElement.setAttribute('data-theme',t);
+}
+// Apply on load
+(()=>{ try{document.documentElement.setAttribute('data-theme',getTheme());}catch(e){} })();
+
+// ── SubtleCrypto: SHA-256 password hash ──────────────────────────────────────
+async function hashPass(password){
+  try{
+    const enc=new TextEncoder();
+    const buf=await crypto.subtle.digest('SHA-256',enc.encode('anton_salt_2025_'+password));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){return password;} // fallback plain if SubtleCrypto unavailable
+}
+
+// ── Celsius ↔ Fahrenheit ─────────────────────────────────────────────────────
+const toF=c=>Math.round((c*9/5+32)*10)/10;
+const toC=f=>Math.round(((f-32)*5/9)*10)/10;
+
+
+
+// ── BIBLIOTECA DE DOCUMENTOS ──────────────────────────────────────────────────
+// Para cada gas: sds = Hoja de seguridad, traslado = Hoja de traslado, catalogo = Ficha Anton
+// Reemplazá null por la URL real cuando el documento esté disponible
+const DOCS_LIBRARY = {
+  R32:      {sds:null, traslado:null, catalogo:null},
+  R410A:    {sds:null, traslado:null, catalogo:null},
+  R134a:    {sds:null, traslado:null, catalogo:null},
+  R404A:    {sds:null, traslado:null, catalogo:null},
+  R1234yf:  {sds:null, traslado:null, catalogo:null},
+  R1234ze:  {sds:null, traslado:null, catalogo:null},
+  R1233zd:  {sds:null, traslado:null, catalogo:null},
+  R407C:    {sds:null, traslado:null, catalogo:null},
+  R407A:    {sds:null, traslado:null, catalogo:null},
+  R407F:    {sds:null, traslado:null, catalogo:null},
+  R417B:    {sds:null, traslado:null, catalogo:null},
+  R417C:    {sds:null, traslado:null, catalogo:null},
+  R449A:    {sds:null, traslado:null, catalogo:null},
+  R448A:    {sds:null, traslado:null, catalogo:null},
+  R454B:    {sds:null, traslado:null, catalogo:null},
+  R454C:    {sds:null, traslado:null, catalogo:null},
+  R455A:    {sds:null, traslado:null, catalogo:null},
+  R513A:    {sds:null, traslado:null, catalogo:null},
+  R290:     {sds:null, traslado:null, catalogo:null},
+  R600a:    {sds:null, traslado:null, catalogo:null},
+  R600:     {sds:null, traslado:null, catalogo:null},
+  R22:      {sds:null, traslado:null, catalogo:null},
+};
+
+// ── GASES DATA ────────────────────────────────────────────────────────────────
+const GASES = {
+  R32:{id:'R32',name:'R-32',category:'HFC',formula:'CH₂F₂',gwp:675,ashraeSafety:'A2L',normalBoilingPoint:-51.7,mw:52.0,criticalTemp:78.1,criticalPressure:57.8,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio con HFC. No mezclar con mineral.',description:'Difluorometano. Alta eficiencia energética. Reemplaza al R410A en equipos nuevos. Levemente inflamable (A2L).',applications:['ac_residencial','ac_comercial','bomba_calor'],replacementFor:['R410A'],ptData:[[-50,1.10],[-40,1.77],[-30,2.73],[-20,4.06],[-10,5.83],[0,8.13],[10,11.07],[20,14.75],[30,19.28],[40,24.78],[50,31.41],[60,39.33]]},
+  R410A:{id:'R410A',name:'R-410A',category:'HFC',formula:'R32/R125 (50/50)',gwp:2088,ashraeSafety:'A1',normalBoilingPoint:-51.6,mw:72.6,criticalTemp:72.1,criticalPressure:49.0,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio con HFC. No mezclar con mineral.',description:'Mezcla casi-azeotrópica (deslizamiento <0.2°C). Estándar en AC Split residencial y comercial. En proceso de phase-down regulatorio.',applications:['ac_residencial','ac_comercial','bomba_calor'],replacementFor:[],ptData:[[-50,1.09],[-40,1.75],[-30,2.70],[-20,4.00],[-10,5.74],[0,7.99],[10,10.87],[20,14.45],[30,18.86],[40,24.22],[50,30.67],[60,38.39]]},
+  R134a:{id:'R134a',name:'R-134a',category:'HFC',formula:'CH₂FCF₃',gwp:1430,ashraeSafety:'A1',normalBoilingPoint:-26.1,mw:102.0,criticalTemp:101.1,criticalPressure:40.6,aceite:'POE / PAG',aceiteISO:'ISO 46-68',aceiteNota:'POE para refrigeración industrial. PAG para sistemas automotrices.',description:'Tetrafluoroetano. Ampliamente usado en refrigeración media temperatura, automotriz y sistemas centrífugos.',applications:['heladera','camara_media','automotriz','centrifugo'],replacementFor:['R12'],ptData:[[-50,0.30],[-40,0.52],[-30,0.85],[-20,1.33],[-10,2.01],[0,2.93],[10,4.15],[20,5.72],[30,7.70],[40,10.17],[50,13.18],[60,16.82]]},
+  R404A:{id:'R404A',name:'R-404A',category:'HFC',formula:'R125/R143a/R134a (44/52/4)',gwp:3922,ashraeSafety:'A1',normalBoilingPoint:-46.6,mw:97.6,criticalTemp:72.1,criticalPressure:37.3,deslizamiento:0.7,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Verificar viscosidad según temperatura de evaporación.',description:'Mezcla casi-azeotrópica para refrigeración comercial y transporte. Alto GWP, en proceso de sustitución.',applications:['camara_media','camara_baja','transporte','comercial_supermarket'],replacementFor:['R502','R22'],ptData:[[-50,0.83],[-40,1.33],[-30,2.05],[-20,3.04],[-10,4.35],[0,6.05],[10,8.21],[20,10.91],[30,14.21],[40,18.22],[50,23.04],[60,28.78]]},
+  R1234yf:{id:'R1234yf',name:'R-1234yf',category:'HFO',formula:'CF₃CF=CH₂',gwp:4,ashraeSafety:'A2L',normalBoilingPoint:-29.4,mw:114.0,criticalTemp:94.7,criticalPressure:33.8,aceite:'PAG / POE',aceiteISO:'ISO 46-68',aceiteNota:'PAG para automotriz (norma SAE J639). POE para otras aplicaciones.',description:'Solstice® yf. HFO ultra bajo GWP. Reemplaza R134a en automotriz y refrigeración media. Levemente inflamable.',applications:['automotriz','heladera','camara_media','centrifugo'],replacementFor:['R134a'],ptData:[[-50,0.37],[-40,0.62],[-30,0.99],[-20,1.51],[-10,2.22],[0,3.16],[10,4.38],[20,5.92],[30,7.84],[40,10.18],[50,13.02],[60,16.42]]},
+  R1234ze:{id:'R1234ze',name:'R-1234ze(E)',category:'HFO',formula:'CHF=CHCF₃',gwp:7,ashraeSafety:'A2L',normalBoilingPoint:-18.9,mw:114.0,criticalTemp:109.4,criticalPressure:36.4,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster recomendado para Solstice® ze.',description:'Solstice® ze. HFO ultra bajo GWP para sistemas centrífugos y chillers. Levemente inflamable.',applications:['centrifugo','chillers'],replacementFor:['R134a'],ptData:[[-50,0.21],[-40,0.37],[-30,0.61],[-20,0.97],[-10,1.47],[0,2.17],[10,3.08],[20,4.27],[30,5.78],[40,7.66],[50,9.97],[60,12.77]]},
+  R1233zd:{id:'R1233zd',name:'R-1233zd(E)',category:'HFO',formula:'C₃H₂ClF₃ (trans)',gwp:1,ashraeSafety:'A1',normalBoilingPoint:18.3,mw:130.5,criticalTemp:166.5,criticalPressure:36.2,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster recomendado para Solstice® zd. Consultar ficha del compresor.',description:'Solstice® zd. GWP=1. No inflamable (A1). Baja presión de trabajo. Ideal para chillers centrífugos y bombas de calor de alta temperatura.',applications:['centrifugo','chillers','industrial'],replacementFor:['R245fa','R1234ze'],ptData:[[-50,0.03],[-40,0.06],[-30,0.11],[-20,0.19],[-10,0.31],[0,0.49],[10,0.74],[20,1.09],[30,1.55],[40,2.16],[50,2.94],[60,3.91]]},
+  R407C:{id:'R407C',name:'R-407C',category:'Blend',formula:'R32/R125/R134a (23/25/52)',gwp:1774,ashraeSafety:'A1',normalBoilingPoint:-43.8,mw:86.2,criticalTemp:87.3,criticalPressure:46.3,deslizamiento:7.2,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'POE obligatorio en equipos nuevos. En retrofit de R22 puede tolerar trazas de AB residual.',description:'Mezcla zeotrópica. Reemplazo directo del R22. Deslizamiento de temperatura 7.2°C. En tabla P-T se muestra presión promedio burbuja/rocío.',applications:['ac_residencial','ac_comercial','bomba_calor','camara_media'],replacementFor:['R22'],ptData:[[-50,0.62],[-40,1.03],[-30,1.63],[-20,2.47],[-10,3.62],[0,5.14],[10,7.11],[20,9.59],[30,12.67],[40,16.45],[50,21.02],[60,26.49]]},
+  R407A:{id:'R407A',name:'R-407A',category:'Blend',formula:'R32/R125/R134a (20/40/40)',gwp:2107,ashraeSafety:'A1',normalBoilingPoint:-45.1,mw:90.2,criticalTemp:83.8,criticalPressure:45.1,deslizamiento:6.0,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Cambiar aceite al reemplazar R404A.',description:'Mezcla zeotrópica para refrigeración comercial media y baja temperatura. Alternativa al R404A con mejor eficiencia.',applications:['camara_media','camara_baja','comercial_supermarket'],replacementFor:['R404A','R22'],ptData:[[-50,0.91],[-40,1.42],[-30,2.21],[-20,3.28],[-10,4.73],[0,6.63],[10,9.09],[20,12.23],[30,16.14],[40,20.98],[50,26.84],[60,33.80]]},
+  R407F:{id:'R407F',name:'R-407F',category:'Blend',formula:'R32/R125/R134a (30/30/40)',gwp:1825,ashraeSafety:'A1',normalBoilingPoint:-46.1,mw:82.0,criticalTemp:82.7,criticalPressure:47.6,deslizamiento:5.5,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Cambiar aceite al reemplazar R22 o R404A.',description:'Reemplazo de R22 y R404A con mejor eficiencia que R407C. Mayor presión de trabajo. Deslizamiento ~5.5°C.',applications:['camara_media','camara_baja','comercial_supermarket','ac_comercial'],replacementFor:['R22','R404A'],ptData:[[-50,1.02],[-40,1.58],[-30,2.46],[-20,3.65],[-10,5.25],[0,7.33],[10,9.98],[20,13.30],[30,17.45],[40,22.56],[50,28.72],[60,36.10]]},
+  R417B:{id:'R417B',name:'R-417B',antonName:'AN22 (R-417B)',category:'Blend',formula:'R125/R134a/R600 (79/18.25/2.75)',gwp:3027,ashraeSafety:'A1',normalBoilingPoint:-44.9,mw:113.1,criticalTemp:75.2,criticalPressure:38.3,deslizamiento:1.5,aceite:'Mineral / Alquilbenceno',aceiteISO:'ISO 32-46',aceiteNota:'✅ Compatible con aceite mineral existente en sistemas R22. No requiere cambio de aceite en la mayoría de los casos.',description:'AN22 (R-417B). Reemplazo directo del R22 en AC y refrigeración media. Compatible con aceite mineral existente. Sin cambio de aceite.',applications:['ac_residencial','ac_comercial','camara_media'],replacementFor:['R22'],ptData:[[-50,0.79],[-40,1.28],[-30,1.97],[-20,2.93],[-10,4.20],[0,5.86],[10,7.96],[20,10.58],[30,13.80],[40,17.69],[50,22.36],[60,27.91]]},
+  R417C:{id:'R417C',name:'R-417C',antonName:'YH12 (R-417C)',category:'Blend',formula:'R125/R134a/R600 (19.5/78.8/1.7)',gwp:1820,ashraeSafety:'A1',normalBoilingPoint:-26.7,mw:103.7,criticalTemp:95.4,criticalPressure:40.7,deslizamiento:4.0,aceite:'Mineral / Alquilbenceno',aceiteISO:'ISO 32-46',aceiteNota:'✅ Compatible con aceite mineral existente en sistemas R22. No requiere cambio de aceite en la mayoría de los casos.',description:'YH12 (R-417C). Reemplazo directo del R12 y R22. Alto porcentaje de R134a, presiones similares al R22. Compatible con aceite mineral.',applications:['ac_residencial','ac_comercial','camara_media'],replacementFor:['R22','R12'],ptData:[[-40,0.71],[-30,1.14],[-20,1.74],[-10,2.57],[0,3.68],[10,5.11],[20,6.94],[30,9.22],[40,12.02],[50,15.41],[60,19.47]]},
+  R448A:{id:'R448A',name:'R-448A',category:'Blend',formula:'R32/R125/R134a/R1234ze/R1234yf (26/26/21/7/20)',gwp:1386,ashraeSafety:'A1',normalBoilingPoint:-45.9,mw:86.3,criticalTemp:82.7,criticalPressure:46.0,deslizamiento:3.9,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster. Cambio de aceite obligatorio al reemplazar R404A.',description:'Solstice® N40. Reemplazo de R404A y R22 en refrigeración comercial y transporte. Buen desempeño energético.',applications:['camara_media','camara_baja','transporte','comercial_supermarket'],replacementFor:['R404A','R22','R507'],ptData:[[-50,1.10],[-40,1.90],[-30,2.94],[-20,4.35],[-10,6.23],[0,8.67],[10,11.80],[20,15.74],[30,20.60],[40,26.50],[50,33.60],[60,42.10]]},
+  R449A:{id:'R449A',name:'R-449A',category:'Blend',formula:'R32/R125/R134a/R1234yf (24.3/24.7/25.7/25.3)',gwp:1397,ashraeSafety:'A1',normalBoilingPoint:-45.7,mw:87.2,criticalTemp:82.1,criticalPressure:45.0,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster. Cambio de aceite obligatorio al reemplazar R404A.',description:'Reemplazo de R404A y R22. Muy similar al R448A. Alta eficiencia en media y baja temperatura.',applications:['camara_media','camara_baja','transporte','comercial_supermarket'],replacementFor:['R404A','R22','R507'],ptData:[[-50,1.08],[-40,1.88],[-30,2.91],[-20,4.32],[-10,6.19],[0,8.62],[10,11.73],[20,15.65],[30,20.48],[40,26.35],[50,33.45],[60,41.90]]},
+  R454B:{id:'R454B',name:'R-454B',category:'Blend',formula:'R32/R1234yf (68.9/31.1)',gwp:466,ashraeSafety:'A2L',normalBoilingPoint:-51.5,mw:62.6,criticalTemp:75.5,criticalPressure:46.3,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster recomendado para Solstice® L40X.',description:'Solstice® L40X. Reemplazo de R410A en equipos nuevos con GWP 78% menor. Levemente inflamable (A2L). Alta eficiencia.',applications:['ac_residencial','ac_comercial','bomba_calor'],replacementFor:['R410A'],ptData:[[-50,1.15],[-40,1.78],[-30,2.74],[-20,4.05],[-10,5.79],[0,8.06],[10,10.97],[20,14.60],[30,19.07],[40,24.52],[50,31.04],[60,38.76]]},
+  R454C:{id:'R454C',name:'R-454C',category:'Blend',formula:'R32/R1234yf (21.5/78.5)',gwp:148,ashraeSafety:'A2L',normalBoilingPoint:-37.5,mw:90.8,criticalTemp:96.9,criticalPressure:37.8,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio con HFO/HFC blend.',description:'Ultra bajo GWP. Reemplazo de R22 y R407C en AC. Levemente inflamable (A2L). Muy bajo impacto ambiental.',applications:['ac_residencial','ac_comercial','camara_media'],replacementFor:['R22','R407C'],ptData:[[-40,0.83],[-30,1.32],[-20,2.02],[-10,2.97],[0,4.24],[10,5.89],[20,7.99],[30,10.62],[40,13.84],[50,17.74],[60,22.30]]},
+  R455A:{id:'R455A',name:'R-455A',category:'Blend',formula:'R744/R32/R1234yf (3/21.5/75.5)',gwp:148,ashraeSafety:'A2L',normalBoilingPoint:-40.0,mw:87.4,criticalTemp:97.0,criticalPressure:38.2,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster recomendado para Solstice® L20. Cambiar aceite al reemplazar R404A.',description:'Solstice® L20. Ultra bajo GWP con CO₂ como componente. Reemplazo de R404A en refrigeración media y baja. Levemente inflamable.',applications:['camara_media','camara_baja','transporte','comercial_supermarket'],replacementFor:['R404A'],ptData:[[-40,0.76],[-30,1.20],[-20,1.83],[-10,2.68],[0,3.79],[10,5.23],[20,7.06],[30,9.34],[40,12.02],[50,15.41],[60,19.50]]},
+  R513A:{id:'R513A',name:'R-513A',category:'Blend',formula:'R1234yf/R134a (56/44)',gwp:631,ashraeSafety:'A1',normalBoilingPoint:-29.1,mw:108.4,criticalTemp:97.0,criticalPressure:37.7,aceite:'POE / PAG',aceiteISO:'ISO 46-68',aceiteNota:'POE para refrigeración industrial. PAG para automotriz. No inflamable (A1).',description:'Reemplazo de R134a con GWP 56% menor. No inflamable (A1). Ideal para chillers centrífugos y automotriz.',applications:['automotriz','heladera','camara_media','centrifugo'],replacementFor:['R134a'],ptData:[[-40,0.60],[-30,0.97],[-20,1.50],[-10,2.21],[0,3.15],[10,4.38],[20,5.97],[30,7.97],[40,10.43],[50,13.40],[60,16.90]]},
+  R290:{id:'R290',name:'R-290',category:'HC',formula:'C₃H₈ (Propano)',gwp:3,ashraeSafety:'A3',normalBoilingPoint:-42.1,mw:44.1,criticalTemp:96.7,criticalPressure:42.5,aceite:'Mineral / PAO',aceiteISO:'ISO 32-68',aceiteNota:'Compatible con aceite mineral. PAO para bajas temperaturas.',warn:'⚠️ INFLAMABLE — Solo en sistemas certificados con carga restringida',description:'Propano. Ultra bajo GWP. Alta inflamabilidad. Requiere equipos certificados y cargas muy pequeñas (<150g).',applications:['heladera','camara_media','ac_residencial','industrial'],replacementFor:['R22','R404A','R134a'],ptData:[[-50,0.71],[-40,1.11],[-30,1.68],[-20,2.45],[-10,3.45],[0,4.74],[10,6.37],[20,8.36],[30,10.79],[40,13.69],[50,17.13],[60,21.17]]},
+  R600:{id:'R600',name:'R-600',category:'HC',formula:'C₄H₁₀ (Butano)',gwp:3,ashraeSafety:'A3',normalBoilingPoint:-0.5,mw:58.1,criticalTemp:152.0,criticalPressure:37.9,aceite:'Mineral',aceiteISO:'ISO 22-32',aceiteNota:'Aceite mineral baja viscosidad. Solo sistemas especializados certificados.',warn:'⚠️ INFLAMABLE — Solo sistemas certificados con carga restringida',description:'Butano normal. HC natural ultra bajo GWP. Propelente, agente espumante y refrigerante en sistemas especializados.',applications:['heladera','industrial'],replacementFor:['R600a'],ptData:[[-50,0.09],[-40,0.17],[-30,0.28],[-20,0.45],[-10,0.70],[0,1.03],[10,1.48],[20,2.08],[30,2.83],[40,3.78],[50,4.96],[60,6.38]]},
+  R600a:{id:'R600a',name:'R-600a',category:'HC',formula:'C₄H₁₀ (Isobutano)',gwp:3,ashraeSafety:'A3',normalBoilingPoint:-11.7,mw:58.1,criticalTemp:134.7,criticalPressure:36.3,aceite:'Mineral',aceiteISO:'ISO 22-32',aceiteNota:'Aceite mineral de baja viscosidad. Equipos herméticos vienen cargados de fábrica.',warn:'⚠️ INFLAMABLE — Solo en sistemas certificados con carga restringida',description:'Isobutano. Estándar en heladeras domésticas europeas. Ultra bajo GWP, excelente eficiencia energética.',applications:['heladera','exhibidor_comercial'],replacementFor:['R12','R134a'],ptData:[[-50,0.17],[-40,0.29],[-30,0.47],[-20,0.72],[-10,1.08],[0,1.57],[10,2.21],[20,3.02],[30,4.05],[40,5.31],[50,6.85],[60,8.69]]},
+  R22:{id:'R22',name:'R-22',category:'HCFC',formula:'CHClF₂',gwp:1810,ashraeSafety:'A1',normalBoilingPoint:-40.8,mw:86.5,criticalTemp:96.2,criticalPressure:49.9,aceite:'Mineral / Alquilbenceno',aceiteISO:'ISO 32-46',aceiteNota:'⚠️ Gas en fase de eliminación. Solo para mantenimiento de equipos existentes. No en equipos nuevos.',warn:'⚠️ HCFC — Prohibida la importación para nuevos equipos (Protocolo de Montreal). Solo mantenimiento.',description:'R-22. Gas de referencia histórico para AC y refrigeración. En eliminación por Protocolo de Montreal (ODP=0.055). Referencia para comparar sustitutos.',applications:['ac_residencial','ac_comercial','camara_media'],replacementFor:[],ptData:[[-50,0.64],[-40,1.05],[-30,1.64],[-20,2.45],[-10,3.55],[0,4.97],[10,6.78],[20,9.10],[30,11.92],[40,15.33],[50,19.42],[60,24.26]]},
+};
+
+const GAS_LIST = Object.values(GASES);
+function barToPsig(bar){ return (bar*14.5038-14.696); }
+function barToPsi(bar){ return bar*14.5038; }
+function gwpColor(gwp){ return gwp<=750?'gwp-low':gwp<=2000?'gwp-mid':'gwp-high'; }
+function interpBar(gas,t){
+  const data=gas.ptData; const tv=parseFloat(t);
+  if(isNaN(tv)) return null;
+  if(tv<=data[0][0]) return data[0][1];
+  if(tv>=data[data.length-1][0]) return data[data.length-1][1];
+  for(let i=0;i<data.length-1;i++){
+    if(tv>=data[i][0]&&tv<=data[i+1][0]){
+      const f=(tv-data[i][0])/(data[i+1][0]-data[i][0]);
+      return data[i][1]+f*(data[i+1][1]-data[i][1]);
+    }
+  }
+  return null;
+}
+function barToTemp(gas,bar){
+  const data=gas.ptData;
+  if(bar<=data[0][1]) return data[0][0];
+  if(bar>=data[data.length-1][1]) return data[data.length-1][0];
+  for(let i=0;i<data.length-1;i++){
+    if(bar>=data[i][1]&&bar<=data[i+1][1]){
+      const f=(bar-data[i][1])/(data[i+1][1]-data[i][1]);
+      return data[i][0]+f*(data[i+1][0]-data[i][0]);
+    }
+  }
+  return null;
+}
+
+// ── PT Chart ──────────────────────────────────────────────────────────────────
+function PTChart({gas}){
+  const W=320,H=180,PAD={top:12,right:14,bottom:36,left:50};
+  const data=gas.ptData.map(([t,bar])=>({t,p:barToPsig(bar)}));
+  const minT=data[0].t,maxT=data[data.length-1].t;
+  const maxP=Math.max(...data.map(d=>d.p));
+  const niceMax=Math.ceil(maxP/50)*50;
+  const x=t=>PAD.left+(t-minT)/(maxT-minT)*(W-PAD.left-PAD.right);
+  const y=p=>PAD.top+(1-p/niceMax)*(H-PAD.top-PAD.bottom);
+  const pts=data.map(d=>`${x(d.t).toFixed(1)},${y(d.p).toFixed(1)}`).join(' ');
+  const ticks=data.filter((_,i)=>i%2===0);
+  const yTicks=[0,niceMax*0.25,niceMax*0.5,niceMax*0.75,niceMax].map(v=>Math.round(v));
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg">
+      {yTicks.map(v=><line key={v} x1={PAD.left} x2={W-PAD.right} y1={y(v)} y2={y(v)} stroke="#e8eef7" strokeWidth="1"/>)}
+      <line x1={PAD.left} x2={PAD.left} y1={PAD.top} y2={H-PAD.bottom} stroke="#ccc" strokeWidth="1"/>
+      <line x1={PAD.left} x2={W-PAD.right} y1={H-PAD.bottom} y2={H-PAD.bottom} stroke="#ccc" strokeWidth="1"/>
+      <polyline points={pts} fill="none" stroke={ANTON} strokeWidth="2.5" strokeLinejoin="round"/>
+      {data.map((d,i)=><circle key={i} cx={x(d.t)} cy={y(d.p)} r="3" fill={ANTON} opacity="0.7"/>)}
+      {ticks.map(d=><text key={d.t} x={x(d.t)} y={H-PAD.bottom+14} textAnchor="middle" fontSize="9" fill="#888">{d.t}°</text>)}
+      {yTicks.map(v=><text key={v} x={PAD.left-6} y={y(v)+3.5} textAnchor="end" fontSize="9" fill="#888">{v}</text>)}
+      <text x={W/2} y={H-2} textAnchor="middle" fontSize="10" fill="#666">Temperatura (°C)</text>
+      <text transform={`rotate(-90) translate(-${H/2},10)`} textAnchor="middle" fontSize="10" fill="#666">P sat (psig)</text>
+    </svg>
+  );
+}
+// ── Gas Detail ────────────────────────────────────────────────────────────────
+function GasDetail({gas,onBack}){
+  const chipGwp=gas.gwp<=750?'chip-green':gas.gwp<=2000?'chip-warn':'chip-danger';
+  return (
+    <div className="app">
+      <div className="header">
+        <button className="back-btn" onClick={onBack}>←</button>
+        <div style={{flex:1,marginLeft:10}}>
+          <div className="header-title">{gas.antonName||gas.name}</div>
+          <div className="header-sub">{gas.category} · ASHRAE {gas.ashraeSafety}</div>
+        </div>
+      </div>
+      <div className="content">
+        <div className="detail-hero">
+          <div className="detail-name">{gas.name}</div>
+          <div className="detail-sub">{gas.formula} · {gas.category}</div>
+          {gas.antonName&&<div className="detail-anton-badge">⭐ {gas.antonName}</div>}
+        </div>
+        <div className="chips-row">
+          <span className={`chip ${chipGwp}`}>GWP {gas.gwp}</span>
+          <span className={`chip ${gas.ashraeSafety==='A1'?'chip-green':gas.ashraeSafety==='A2L'?'chip-warn':'chip-danger'}`}>ASHRAE {gas.ashraeSafety}</span>
+          <span className="chip chip-neutral">Teb {gas.normalBoilingPoint}°C</span>
+          <span className="chip chip-neutral">Tcrit {gas.criticalTemp}°C</span>
+          <span className="chip chip-neutral">Pcrit {barToPsi(gas.criticalPressure).toFixed(0)} psi</span>
+          <span className="chip chip-neutral">PM {gas.mw} g/mol</span>
+          {gas.deslizamiento!=null&&<span className="chip chip-warn">Glide {gas.deslizamiento}°C</span>}
+        </div>
+        <div className="section">
+          <div className="section-header">Descripción</div>
+          <div className="section-body">
+            <p className="desc-text">{gas.description}</p>
+            {gas.replacementFor&&gas.replacementFor.length>0&&<p className="desc-text" style={{marginTop:8}}><strong>Reemplaza:</strong> {gas.replacementFor.join(', ')}</p>}
+          </div>
+        </div>
+        <div className="section">
+          <div className="section-header">Aceite Lubricante</div>
+          <div className="section-body">
+            <div className="oil-box">
+              <div className="oil-label">Tipo de aceite</div>
+              <div className="oil-val">{gas.aceite} · {gas.aceiteISO}</div>
+              <div className="oil-nota">{gas.aceiteNota}</div>
+            </div>
+            {gas.warn&&<div className="warn-box"><span>⚠️</span><span>{gas.warn}</span></div>}
+          </div>
+        </div>
+        <div className="section">
+          <div className="section-header">Curva P-T de Saturación</div>
+          <div className="chart-area"><PTChart gas={gas}/></div>
+        </div>
+        <div className="section">
+          <div className="section-header">Tabla P-T — Presión de Saturación</div>
+          <div style={{overflowX:'auto'}}>
+            <table className="pt-table">
+              <thead><tr><th>T (°C)</th><th>psig</th><th>bar abs</th></tr></thead>
+              <tbody>
+                {gas.ptData.map(([t,bar])=>(
+                  <tr key={t}><td><strong>{t}°C</strong></td><td>{barToPsig(bar).toFixed(1)}</td><td>{bar.toFixed(2)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style={{height:16}}/>
+      </div>
+    </div>
+  );
+}
+// ── Gas List ──────────────────────────────────────────────────────────────────
+function GasListScreen({onSelect}){
+  const [search,setSearch]=React.useState('');
+  const [filter,setFilter]=React.useState('Todos');
+  const filters=['Todos','HFC','HFO','Blend','HC','Anton'];
+  const filtered=GAS_LIST.filter(g=>{
+    const q=search.toLowerCase();
+    const ms=!q||g.name.toLowerCase().includes(q)||(g.antonName||'').toLowerCase().includes(q)||g.formula.toLowerCase().includes(q)||g.description.toLowerCase().includes(q);
+    const mf=filter==='Todos'?true:filter==='Anton'?!!g.antonName:g.category===filter;
+    return ms&&mf;
+  });
+  return (
+    <div className="content">
+      <div className="search-bar">
+        <div className="search-wrap">
+          <span className="search-icon">🔍</span>
+          <input className="search-input" placeholder="Gas, fórmula, aplicación..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        </div>
+      </div>
+      <div className="filter-row">
+        {filters.map(f=><button key={f} className={`filter-chip ${filter===f?'active':''}`} onClick={()=>setFilter(f)}>{f==='Anton'?'⭐ Anton':f}</button>)}
+      </div>
+      {filtered.length===0&&<div className="empty"><div className="empty-icon">🔍</div><div className="empty-text">Sin resultados para <strong>"{search}"</strong></div></div>}
+      {['HFC','HFO','Blend','HC','HCFC'].map(cat=>{
+        const gases=filtered.filter(g=>g.category===cat);
+        if(!gases.length) return null;
+        return (
+          <React.Fragment key={cat}>
+            <div className="divider">{cat==='HCFC'?'HCFC — Referencia':cat==='HFC'?'HFC — Alta eficiencia':cat==='HFO'?'HFO — Ultra bajo GWP':cat==='Blend'?'Blend — Mezclas':cat==='HC'?'HC — Hidrocarburos':cat}</div>
+            {gases.map(gas=>(
+              <div className="gas-card" key={gas.id} onClick={()=>onSelect(gas)}>
+                <div className={`gas-badge badge-${gas.category}`}>
+                  <span className="gas-badge-id">{gas.id.replace('R','')}</span>
+                  <span>{gas.category}</span>
+                </div>
+                <div className="gas-info">
+                  <div className="gas-name">{gas.antonName||gas.name}</div>
+                  {gas.antonName&&<div className="gas-anton">{gas.name}</div>}
+                  <div className="gas-desc">{gas.description}</div>
+                </div>
+                <div className="gas-right">
+                  <span className={`gwp-pill ${gwpColor(gas.gwp)}`}>GWP {gas.gwp}</span>
+                  <span className={`safety-pill safety-${gas.ashraeSafety.replace('/','')}`}>{gas.ashraeSafety}</span>
+                </div>
+              </div>
+            ))}
+          </React.Fragment>
+        );
+      })}
+      <div style={{height:8}}/>
+    </div>
+  );
+}
+
+// ── Comparison Screen (4 gases) ───────────────────────────────────────────────
+function ComparisonScreen(){
+  const COLORS=['#1B4F8A','#0a7e4f','#b85c00','#7b3fa0'];
+  const BG=['#e8eef7','#e6f4ed','#fff3dc','#f3ecfa'];
+  const [ids,setIds]=React.useState(['R22','R407C','R417B','R410A']);
+  const [count,setCount]=React.useState(2);
+  const [tempC,setTempC]=React.useState('0');
+  function setId(i,v){const a=[...ids];a[i]=v;setIds(a);}
+  const active=ids.slice(0,count).map(id=>GASES[id]);
+  const W=320,H=190,PAD={top:14,right:14,bottom:36,left:50};
+  const allPts=active.flatMap(g=>g.ptData);
+  const minT=Math.min(...allPts.map(d=>d[0])),maxT=Math.max(...allPts.map(d=>d[0]));
+  const maxP=Math.max(...allPts.map(d=>barToPsig(d[1])));
+  const niceMax=Math.ceil(maxP/50)*50;
+  const cx=t=>PAD.left+(t-minT)/(maxT-minT)*(W-PAD.left-PAD.right);
+  const cy=p=>PAD.top+(1-p/niceMax)*(H-PAD.top-PAD.bottom);
+  const yTicks=[0,niceMax*0.25,niceMax*0.5,niceMax*0.75,niceMax].map(v=>Math.round(v));
+  const DASH=['none','5,3','2,3','7,3,2,3'];
+  const props=[
+    {label:'Categoría',fn:g=>g.category},
+    {label:'GWP (AR4)',fn:g=>g.gwp,better:'lower'},
+    {label:'ASHRAE',fn:g=>g.ashraeSafety},
+    {label:'Teb (°C)',fn:g=>g.normalBoilingPoint},
+    {label:'Tcrit (°C)',fn:g=>g.criticalTemp},
+    {label:'Pcrit (psi)',fn:g=>barToPsi(g.criticalPressure).toFixed(0)},
+    {label:'PM (g/mol)',fn:g=>g.mw},
+    {label:'Glide (°C)',fn:g=>g.deslizamiento??'—',better:'lower'},
+    {label:'Aceite',fn:g=>g.aceite},
+  ];
+  return (
+    <div className="content" style={{paddingTop:8}}>
+      <div className="divider">Comparar Gases</div>
+      <div style={{padding:'0 12px 8px'}}>
+        <div style={{display:'flex',gap:6,marginBottom:8}}>
+          {[2,3,4].map(n=>(
+            <button key={n} onClick={()=>setCount(n)} style={{flex:1,padding:'6px 0',borderRadius:8,border:'none',cursor:'pointer',fontSize:12,fontWeight:700,background:count===n?'var(--anton)':'#f0f2f5',color:count===n?'#fff':'var(--subtext)'}}>
+              {n} gases
+            </button>
+          ))}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:count===4?'1fr 1fr':'repeat('+count+',1fr)',gap:6}}>
+          {ids.slice(0,count).map((id,i)=>(
+            <div key={i} style={{background:BG[i],borderRadius:8,padding:'8px 10px',border:`2px solid ${COLORS[i]}33`}}>
+              <div style={{fontSize:10,fontWeight:700,color:COLORS[i],marginBottom:4}}>⬤ Gas {i+1}</div>
+              <select value={id} onChange={e=>setId(i,e.target.value)} style={{width:'100%',border:'none',background:'transparent',fontSize:12,fontWeight:600,color:COLORS[i],outline:'none'}}>
+                {GAS_LIST.map(g=><option key={g.id} value={g.id}>{g.antonName||g.name}</option>)}
+              </select>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="section">
+        <div className="section-header">Curvas P-T Comparadas</div>
+        <div className="chart-area">
+          <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg">
+            {yTicks.map(v=><line key={v} x1={PAD.left} x2={W-PAD.right} y1={cy(v)} y2={cy(v)} stroke="#e8eef7" strokeWidth="1"/>)}
+            <line x1={PAD.left} x2={PAD.left} y1={PAD.top} y2={H-PAD.bottom} stroke="#ccc" strokeWidth="1"/>
+            <line x1={PAD.left} x2={W-PAD.right} y1={H-PAD.bottom} y2={H-PAD.bottom} stroke="#ccc" strokeWidth="1"/>
+            {active.map((g,i)=>{
+              const pts=g.ptData.map(([t,b])=>`${cx(t).toFixed(1)},${cy(barToPsig(b)).toFixed(1)}`).join(' ');
+              return <polyline key={g.id} points={pts} fill="none" stroke={COLORS[i]} strokeWidth="2" strokeLinejoin="round" strokeDasharray={DASH[i]}/>;
+            })}
+            {yTicks.map(v=><text key={v} x={PAD.left-6} y={cy(v)+3.5} textAnchor="end" fontSize="9" fill="#888">{v}</text>)}
+            <text x={W/2} y={H-2} textAnchor="middle" fontSize="10" fill="#666">Temperatura (°C)</text>
+            <text transform={`rotate(-90) translate(-${H/2},10)`} textAnchor="middle" fontSize="10" fill="#666">P sat (psig)</text>
+            {active.map((g,i)=>{
+              const y0=PAD.top+2+i*12;
+              return (<g key={g.id}><line x1={PAD.left+4} x2={PAD.left+14} y1={y0+3} y2={y0+3} stroke={COLORS[i]} strokeWidth="2" strokeDasharray={DASH[i]}/><text x={PAD.left+16} y={y0+7} fontSize="8" fill={COLORS[i]}>{g.antonName||g.name}</text></g>);
+            })}
+          </svg>
+        </div>
+      </div>
+      <div className="sim-card">
+        <div className="sim-label">Presión a temperatura (°C)</div>
+        <input className="sim-input" type="number" value={tempC} onChange={e=>setTempC(e.target.value)} placeholder="Ej: -10"/>
+        <div style={{display:'flex',gap:6,marginTop:10,flexWrap:'wrap'}}>
+          {active.map((g,i)=>{const b=interpBar(g,tempC);if(b==null)return null;return(
+            <div key={g.id} style={{flex:'1 1 40%',background:BG[i],borderRadius:8,padding:'10px',textAlign:'center',border:`1px solid ${COLORS[i]}33`}}>
+              <div style={{fontSize:10,color:COLORS[i],fontWeight:700,marginBottom:3}}>⬤ {g.antonName||g.name}</div>
+              <div style={{fontSize:17,fontWeight:800,color:COLORS[i]}}>{barToPsig(b).toFixed(1)}</div>
+              <div style={{fontSize:10,color:'#888'}}>psig · {b.toFixed(2)} bar</div>
+            </div>
+          );})}
+        </div>
+      </div>
+      <div className="section">
+        <div className="section-header">Propiedades Comparadas</div>
+        <div style={{overflowX:'auto'}}>
+          <table className="cmp-table" style={{minWidth:count>2?count*90+110:'auto'}}>
+            <thead><tr><th style={{textAlign:'left'}}>Propiedad</th>{active.map((g,i)=><th key={g.id} style={{color:COLORS[i]}}>{g.antonName||g.name}</th>)}</tr></thead>
+            <tbody>
+              {props.map(p=>{
+                const vals=active.map(g=>p.fn(g));
+                let best=null;
+                if(p.better==='lower'){const nums=vals.filter(v=>typeof v==='number');if(nums.length)best=Math.min(...nums);}
+                return(<tr key={p.label}><td className="row-label">{p.label}</td>{vals.map((v,i)=>(<td key={i} style={{textAlign:'center',color:COLORS[i],fontWeight:600,fontSize:12}}>{v}{p.better==='lower'&&v===best&&<span style={{color:'#0a7e4f',fontSize:10}}> ✓</span>}</td>))}</tr>);
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style={{height:16}}/>
+    </div>
+  );
+}
+// ── Simulator PT Screen ───────────────────────────────────────────────────────
+function SimulatorScreen(){
+  const [selectedId,setSelectedId]=React.useState('R410A');
+  const [temp,setTemp]=React.useState('0');
+  const [unit,setUnit]=React.useState('C'); // 'C' or 'F'
+  const gas=GASES[selectedId];
+  // Convert displayed temp to Celsius for lookup
+  const tempC=unit==='F'?((parseFloat(temp)-32)*5/9).toFixed(1):temp;
+  const barVal=interpBar(gas,tempC);
+  const psigVal=barVal!=null?barToPsig(barVal):null;
+  return (
+    <div className="content" style={{paddingTop:8}}>
+      <div className="divider" style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <span>Simulador P-T</span>
+        <div className="unit-toggle">
+          <button className={`unit-btn ${unit==='C'?'active':''}`} onClick={()=>{if(unit!=='C'){const v=parseFloat(temp);setTemp(isNaN(v)?'0':((v-32)*5/9).toFixed(0));setUnit('C');}}}>°C</button>
+          <button className={`unit-btn ${unit==='F'?'active':''}`} onClick={()=>{if(unit!=='F'){const v=parseFloat(temp);setTemp(isNaN(v)?'32':(v*9/5+32).toFixed(0));setUnit('F');}}}>°F</button>
+        </div>
+      </div>
+      <div className="sim-card">
+        <div className="sim-label">Gas Refrigerante</div>
+        <select className="sim-input" value={selectedId} onChange={e=>setSelectedId(e.target.value)}>
+          {GAS_LIST.map(g=><option key={g.id} value={g.id}>{g.antonName||g.name} — {g.category}</option>)}
+        </select>
+      </div>
+      <div className="sim-card" style={{marginTop:0}}>
+        <div className="sim-label">Temperatura de Saturación (°{unit})</div>
+        <input className="sim-input" type="number" value={temp} onChange={e=>setTemp(e.target.value)} placeholder={unit==='C'?'Ej: -10':'Ej: 14'}/>
+      </div>
+      {psigVal!=null&&(<>
+        <div className="sim-result">
+          <div className="sim-result-label">Presión de Saturación</div>
+          <div className="sim-result-val">{psigVal.toFixed(1)}</div>
+          <div className="sim-result-unit">psig</div>
+        </div>
+        <div style={{display:'flex',gap:10,margin:'0 12px 10px'}}>
+          {[['bar abs',barVal.toFixed(3)],['psi abs',(barVal*14.5038).toFixed(1)],['kPa',(barVal*100).toFixed(0)]].map(([lbl,val])=>(
+            <div key={lbl} style={{flex:1,background:'#fff',borderRadius:10,padding:'12px',textAlign:'center',border:'1px solid #dde3ed'}}>
+              <div style={{fontSize:11,color:'#888',marginBottom:2}}>{lbl}</div>
+              <div style={{fontSize:20,fontWeight:700,color:'#1B4F8A'}}>{val}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{margin:'0 12px',background:'#fff',borderRadius:10,padding:'12px',border:'1px solid #dde3ed',fontSize:13,color:'#555',lineHeight:1.6}}>
+          <strong>{gas.antonName||gas.name}</strong> · GWP {gas.gwp} · ASHRAE {gas.ashraeSafety}<br/>Aceite: {gas.aceite}
+        </div>
+      </>)}
+      <div style={{height:20}}/>
+    </div>
+  );
+}
+
+// ── Superheat / Subcooling Screen ─────────────────────────────────────────────
+function SuperheatScreen(){
+  const [gasId,setGasId]=React.useState('R410A');
+  const [pSuction,setPSuction]=React.useState('');
+  const [tSuction,setTSuction]=React.useState('');
+  const [pDischarge,setPDischarge]=React.useState('');
+  const [tLiquid,setTLiquid]=React.useState('');
+  const gas=GASES[gasId];
+  function psigToBar(psig){return(parseFloat(psig)+14.696)/14.5038;}
+  const hasSH=pSuction!==''&&tSuction!=='';
+  const hasSC=pDischarge!==''&&tLiquid!=='';
+  let tSatSuction=null,sh=null,tSatDischarge=null,sc=null;
+  if(hasSH){tSatSuction=barToTemp(gas,psigToBar(pSuction));if(tSatSuction!=null)sh=parseFloat(tSuction)-tSatSuction;}
+  if(hasSC){tSatDischarge=barToTemp(gas,psigToBar(pDischarge));if(tSatDischarge!=null)sc=tSatDischarge-parseFloat(tLiquid);}
+  function shDiag(v){
+    if(v<2) return {cls:'diag-danger',msg:'⚠️ MUY BAJO — Riesgo de líquido en compresor.'};
+    if(v<5) return {cls:'diag-warn',msg:'⚡ BAJO — Aceptable en TXV. Monitorear.'};
+    if(v<=10) return {cls:'diag-ok',msg:'✅ IDEAL — Rango normal para TXV.'};
+    if(v<=18) return {cls:'diag-warn',msg:'⚡ ALTO — Normal en capilar. En TXV puede indicar falta de carga.'};
+    return {cls:'diag-danger',msg:'🔴 MUY ALTO — Falta de carga o restricción en el circuito.'};
+  }
+  function scDiag(v){
+    if(v<2) return {cls:'diag-warn',msg:'⚡ BAJO — Posible flash gas en línea de líquido.'};
+    if(v<=8) return {cls:'diag-ok',msg:'✅ IDEAL — Subenfriamiento normal.'};
+    if(v<=15) return {cls:'diag-warn',msg:'⚡ ALGO ALTO — Verificar exceso de carga.'};
+    return {cls:'diag-danger',msg:'🔴 MUY ALTO — Posible exceso de carga.'};
+  }
+  return (
+    <div className="content" style={{paddingTop:8}}>
+      <div className="divider">Superheat y Subcooling</div>
+      <div className="sim-card">
+        <div className="sim-label">Gas Refrigerante</div>
+        <select className="sim-input" value={gasId} onChange={e=>setGasId(e.target.value)}>
+          {GAS_LIST.map(g=><option key={g.id} value={g.id}>{g.antonName||g.name}</option>)}
+        </select>
+      </div>
+      <div style={{margin:'0 12px',background:'#fff',borderRadius:'var(--radius)',border:'1px solid var(--border)',overflow:'hidden'}}>
+        <div style={{padding:'10px 14px',background:'#e8eef7',fontSize:12,fontWeight:700,color:'var(--anton)',textTransform:'uppercase',letterSpacing:'0.5px'}}>🌡️ Superheat</div>
+        <div style={{padding:'12px 14px'}}>
+          <div style={{display:'flex',gap:8}}>
+            <div style={{flex:1}}><div className="sim-label">P aspiración (psig)</div><input className="sim-input" type="number" value={pSuction} onChange={e=>setPSuction(e.target.value)} placeholder="Ej: 55"/></div>
+            <div style={{flex:1}}><div className="sim-label">T línea aspiración (°C)</div><input className="sim-input" type="number" value={tSuction} onChange={e=>setTSuction(e.target.value)} placeholder="Ej: 5"/></div>
+          </div>
+          {sh!=null&&(
+            <div style={{marginTop:10}}>
+              <div style={{display:'flex',gap:8,marginBottom:8}}>
+                <div style={{flex:1,background:'#f8f9fb',borderRadius:8,padding:'10px',textAlign:'center'}}><div style={{fontSize:10,color:'#888',fontWeight:600}}>T° SAT. ASPIRACIÓN</div><div style={{fontSize:18,fontWeight:800,color:'var(--anton)'}}>{tSatSuction.toFixed(1)}°C</div></div>
+                <div style={{flex:1,background:'var(--anton)',borderRadius:8,padding:'10px',textAlign:'center'}}><div style={{fontSize:10,color:'rgba(255,255,255,0.8)',fontWeight:600}}>SUPERHEAT</div><div style={{fontSize:22,fontWeight:800,color:'#fff'}}>{sh.toFixed(1)}°C</div></div>
+              </div>
+              <div className={`diagnosis-box ${shDiag(sh).cls}`}>{shDiag(sh).msg}</div>
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{margin:'8px 12px',background:'#fff',borderRadius:'var(--radius)',border:'1px solid var(--border)',overflow:'hidden'}}>
+        <div style={{padding:'10px 14px',background:'#fff3dc',fontSize:12,fontWeight:700,color:'#a05a00',textTransform:'uppercase',letterSpacing:'0.5px'}}>❄️ Subcooling</div>
+        <div style={{padding:'12px 14px'}}>
+          <div style={{display:'flex',gap:8}}>
+            <div style={{flex:1}}><div className="sim-label">P línea líquido (psig)</div><input className="sim-input" type="number" value={pDischarge} onChange={e=>setPDischarge(e.target.value)} placeholder="Ej: 230"/></div>
+            <div style={{flex:1}}><div className="sim-label">T línea líquido (°C)</div><input className="sim-input" type="number" value={tLiquid} onChange={e=>setTLiquid(e.target.value)} placeholder="Ej: 38"/></div>
+          </div>
+          {sc!=null&&(
+            <div style={{marginTop:10}}>
+              <div style={{display:'flex',gap:8,marginBottom:8}}>
+                <div style={{flex:1,background:'#f8f9fb',borderRadius:8,padding:'10px',textAlign:'center'}}><div style={{fontSize:10,color:'#888',fontWeight:600}}>T° SAT. CONDENSACIÓN</div><div style={{fontSize:18,fontWeight:800,color:'var(--anton)'}}>{tSatDischarge.toFixed(1)}°C</div></div>
+                <div style={{flex:1,background:'#a05a00',borderRadius:8,padding:'10px',textAlign:'center'}}><div style={{fontSize:10,color:'rgba(255,255,255,0.8)',fontWeight:600}}>SUBCOOLING</div><div style={{fontSize:22,fontWeight:800,color:'#fff'}}>{sc.toFixed(1)}°C</div></div>
+              </div>
+              <div className={`diagnosis-box ${scDiag(sc).cls}`}>{scDiag(sc).msg}</div>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="section">
+        <div className="section-header">Valores de Referencia</div>
+        <div style={{overflowX:'auto'}}>
+          <table className="pt-table">
+            <thead><tr><th>Parámetro</th><th>Capilar</th><th>TXV</th></tr></thead>
+            <tbody>
+              <tr><td style={{textAlign:'left'}}>Superheat evap.</td><td>8–15°C</td><td>4–8°C</td></tr>
+              <tr><td style={{textAlign:'left'}}>Superheat total</td><td>20–30°C</td><td>10–20°C</td></tr>
+              <tr><td style={{textAlign:'left'}}>Subcooling</td><td>2–5°C</td><td>4–8°C</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style={{height:16}}/>
+    </div>
+  );
+}
+// ── Ciclo Screen — Diagrama Animado ───────────────────────────────────────────
+// ── NumInput component (used by CicloScreen) ─────────────────────────────────
+function NumInput({lbl,val,onSet,min,max,step=1,col='#1B4F8A',unit='deg'}){
+  const unitLabel = unit==='deg' ? '°C' : unit;
+  const dec = step < 1 ? 1 : 0;
+  const down = () => onSet(v => +(Math.max(min, v-step).toFixed(dec)));
+  const up   = () => onSet(v => +(Math.min(max, v+step).toFixed(dec)));
+  const btn = (txt,fn) => (
+    <button onClick={fn} style={{width:28,height:28,borderRadius:7,border:`1.5px solid ${col}44`,
+      background:'white',color:col,fontWeight:900,fontSize:17,cursor:'pointer',
+      display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,lineHeight:1,
+      WebkitTapHighlightColor:'transparent'}}>
+      {txt}
+    </button>
+  );
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:7}}>
+      <span style={{fontSize:10.5,color:'#555',width:96,flexShrink:0,fontWeight:600}}>{lbl}</span>
+      {btn('−',down)}
+      <input type="number" value={val} min={min} max={max} step={step}
+        onChange={e=>{const v=+e.target.value; if(!isNaN(v)&&v>=min&&v<=max) onSet(()=>v);}}
+        style={{width:54,textAlign:'center',border:`1.5px solid ${col}66`,borderRadius:7,
+          padding:'4px 0',fontSize:15,fontWeight:700,color:col,outline:'none',
+          WebkitAppearance:'none',MozAppearance:'textfield'}}/>
+      {btn('+',up)}
+      <span style={{fontSize:10,color:'#888',flexShrink:0,width:22}}>{unitLabel}</span>
+    </div>
+  );
+}
+
+
+// ── Mollier (P-h) Diagram Data ─────────────────────────────────────────────────
+const MOLLIER_H={
+  'R22':    {hL0:200,hV0:406,Cl:1.21,Cv:0.76,Tc:96.1, Pc:49.9,hc:383},
+  'R134a':  {hL0:200,hV0:398,Cl:1.46,Cv:0.85,Tc:101.1,Pc:40.6,hc:388},
+  'R32':    {hL0:200,hV0:516,Cl:1.88,Cv:0.97,Tc:78.1, Pc:57.8,hc:480},
+  'R410A':  {hL0:200,hV0:418,Cl:1.57,Cv:0.88,Tc:72.1, Pc:49.0,hc:405},
+  'R404A':  {hL0:200,hV0:400,Cl:1.46,Cv:0.85,Tc:72.1, Pc:37.3,hc:380},
+  'R407A':  {hL0:200,hV0:418,Cl:1.54,Cv:0.86,Tc:82.8, Pc:45.2,hc:400},
+  'R407C':  {hL0:200,hV0:422,Cl:1.52,Cv:0.87,Tc:86.8, Pc:46.3,hc:405},
+  'R407F':  {hL0:200,hV0:416,Cl:1.55,Cv:0.87,Tc:87.0, Pc:47.2,hc:404},
+  'R449A':  {hL0:200,hV0:405,Cl:1.48,Cv:0.86,Tc:78.0, Pc:42.0,hc:390},
+  'R454B':  {hL0:200,hV0:450,Cl:1.70,Cv:0.92,Tc:75.5, Pc:52.1,hc:430},
+  'R454C':  {hL0:200,hV0:440,Cl:1.65,Cv:0.91,Tc:77.3, Pc:48.5,hc:420},
+  'R455A':  {hL0:200,hV0:435,Cl:1.63,Cv:0.90,Tc:75.0, Pc:47.0,hc:415},
+  'R513A':  {hL0:200,hV0:388,Cl:1.42,Cv:0.84,Tc:97.1, Pc:36.4,hc:375},
+  'R417B':  {hL0:200,hV0:407,Cl:1.48,Cv:0.86,Tc:88.3, Pc:43.0,hc:393},
+  'R417C':  {hL0:200,hV0:409,Cl:1.49,Cv:0.86,Tc:89.0, Pc:44.0,hc:395},
+  'R290':   {hL0:200,hV0:628,Cl:2.40,Cv:1.58,Tc:96.7, Pc:42.5,hc:555},
+  'R600a':  {hL0:200,hV0:567,Cl:2.40,Cv:1.75,Tc:135.0,Pc:36.4,hc:507},
+  'R600':   {hL0:200,hV0:560,Cl:2.42,Cv:1.72,Tc:152.0,Pc:38.0,hc:510},
+  'R1234yf':{hL0:200,hV0:379,Cl:1.35,Cv:0.82,Tc:94.7, Pc:33.8,hc:360},
+  'R1234ze':{hL0:200,hV0:390,Cl:1.40,Cv:0.83,Tc:109.4,Pc:36.3,hc:370},
+  'R1233zd':{hL0:200,hV0:380,Cl:1.36,Cv:0.82,Tc:166.5,Pc:35.7,hc:340},
+};
+
+// ── CicloScreen ───────────────────────────────────────────────────────────────
+function CicloScreen(){
+  const CICLO_IDS=['R417C','R134a','R417B','R410A','R32','R404A','R407A','R407F',
+                   'R600a','R600','R290','R449A','R454B','R454C','R455A','R513A',
+                   'R1234ze','R1233zd','R1234yf'];
+  const [gasId,setGasId]=React.useState('R410A');
+  const [tevap,setTevap]=React.useState(-10);
+  const [tcond,setTcond]=React.useState(45);
+  const [sh,setSh]=React.useState(7);
+  const [sc,setSc]=React.useState(5);
+  const [potKW,setPotKW]=React.useState(5);
+
+  const gas=GASES[gasId];
+  const pLow=interpBar(gas,tevap);
+  const pHigh=interpBar(gas,tcond);
+  const valid=pLow&&pHigh&&pHigh>pLow;
+  const pLowPsig=valid?barToPsig(pLow):0;
+  const pHighPsig=valid?barToPsig(pHigh):0;
+  const T1=tevap+sh; const T3=tcond-sc; const T4=tevap;
+  const rc=valid?pHigh/pLow:null;
+  const T2=rc?Math.round((T1+273.15)*Math.pow(rc,0.13)-273.15):null;
+  const TeK=tevap+273.15, TcK=tcond+273.15;
+  const copCarnot=valid?TeK/(TcK-TeK):null;
+  const copReal=copCarnot?+(copCarnot*0.55).toFixed(2):null;
+  const qEvap=copReal?+(potKW*copReal).toFixed(2):null;
+  const qCond=copReal?+(potKW*(copReal+1)).toFixed(2):null;
+  const eer=copReal?+(copReal*3.412).toFixed(1):null;
+  const tons=qEvap?+(qEvap/3.517).toFixed(2):null;
+
+  const animCSS=`
+    @keyframes flowU{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
+    @keyframes flowL{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
+    @keyframes flowD{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
+    @keyframes flowR{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
+    .fU{stroke-dasharray:8 16;animation:flowU 0.8s linear infinite;}
+    .fL{stroke-dasharray:8 16;animation:flowL 0.9s linear infinite;}
+    .fD{stroke-dasharray:8 16;animation:flowD 0.85s linear infinite;}
+    .fR{stroke-dasharray:8 16;animation:flowR 1.0s linear infinite;}
+  `;
+
+  function Pipe({d,color,cls,w=7}){
+    return (<>
+      <path d={d} stroke={color} strokeWidth={w+4} fill="none"
+        strokeLinecap="round" strokeLinejoin="round" opacity="0.18"/>
+      <path d={d} stroke={color} strokeWidth={w} fill="none"
+        strokeLinecap="round" strokeLinejoin="round" opacity="0.7"/>
+      <path d={d} stroke="rgba(255,255,255,0.30)" strokeWidth={w*0.35} fill="none"
+        strokeLinecap="round" strokeLinejoin="round"/>
+      <path d={d} stroke={color} strokeWidth={w} fill="none"
+        strokeLinecap="round" strokeLinejoin="round" className={cls} opacity="0.5"/>
+    </>);
+  }
+
+  return (
+    <div className="content" style={{paddingTop:8,paddingBottom:16}}>
+      <div className="divider">Ciclo de Refrigeración</div>
+
+      <div style={{padding:'0 12px 10px'}}>
+        <div className="sim-label" style={{marginBottom:4}}>Gas Refrigerante</div>
+        <select className="sim-input" value={gasId} onChange={e=>setGasId(e.target.value)} style={{marginBottom:10}}>
+          {CICLO_IDS.filter(id=>GASES[id]).map(id=>{
+            const g=GASES[id];
+            return <option key={id} value={id}>{g.antonName||g.name}</option>;
+          })}
+        </select>
+        <div style={{background:'var(--card)',borderRadius:11,padding:'10px 12px 3px',border:'1px solid var(--border)'}}>
+          <NumInput lbl="T° Evaporación" val={tevap} onSet={setTevap} min={-50} max={15}  col="#1976d2"/>
+          <NumInput lbl="T° Condensación" val={tcond} onSet={setTcond} min={25}  max={70}  col="#d32f2f"/>
+          <NumInput lbl="Superheat"       val={sh}    onSet={setSh}    min={2}   max={25}  col="#1976d2" unit="K"/>
+          <NumInput lbl="Subcooling"      val={sc}    onSet={setSc}    min={0}   max={15}  col="#d32f2f" unit="K"/>
+          <NumInput lbl="Potencia comp."  val={potKW} onSet={setPotKW} min={0.5} max={50} step={0.5} col="#e65100" unit="kW"/>
+        </div>
+      </div>
+
+      {valid ? (
+        <div style={{padding:'0 6px 4px'}}>
+          <svg viewBox="0 0 380 510" width="100%" style={{display:'block'}}>
+            <defs>
+              <style>{animCSS}</style>
+              <linearGradient id="gBlu" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stopColor="#0d47a1"/><stop offset="100%" stopColor="#42a5f5"/>
+              </linearGradient>
+              <linearGradient id="gRed" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#b71c1c"/><stop offset="100%" stopColor="#ef5350"/>
+              </linearGradient>
+              <linearGradient id="gGld" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#e65100"/><stop offset="100%" stopColor="#ffb300"/>
+              </linearGradient>
+              <linearGradient id="gCyn" x1="1" y1="0" x2="0" y2="0">
+                <stop offset="0%" stopColor="#004d40"/><stop offset="100%" stopColor="#26a69a"/>
+              </linearGradient>
+              <filter id="fSh">
+                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#1B4F8A" floodOpacity="0.15"/>
+              </filter>
+              <filter id="fC">
+                <feDropShadow dx="0" dy="3" stdDeviation="5" floodColor="#000" floodOpacity="0.13"/>
+              </filter>
+            </defs>
+
+            {/* ── Fondo ── */}
+            <rect width="380" height="510" fill="transparent"/>
+
+            {/* ════════════════════════════════════════════════
+                TUBERÍAS
+                Rectángulo: TL(52,94) TR(328,94) BR(328,432) BL(52,432)
+                Condensador: y=94, x=88-292
+                Compresor:   x=328, y=178-343
+                Evaporador:  y=432, x=88-292
+                Expansión:   x=52,  y=225-301
+                ════════════════════════════════════════════════ */}
+
+            {/* ASPIRACIÓN (azul): evap-right → BR corner → comp-inlet */}
+            <Pipe d="M 292,432 L 328,432 L 328,343" color="#1976d2" cls="fU"/>
+            {/* DESCARGA (rojo): comp-outlet → TR corner → cond-right */}
+            <Pipe d="M 328,178 L 328,94 L 292,94" color="#d32f2f" cls="fL"/>
+            {/* LÍQUIDO AP (dorado): cond-left → TL corner → expansion-top */}
+            <Pipe d="M 88,94 L 52,94 L 52,225" color="#f57c00" cls="fD"/>
+            {/* MIX BP (cyan): expansion-bottom → BL corner → evap-left */}
+            <Pipe d="M 52,301 L 52,432 L 88,432" color="#00897b" cls="fR"/>
+
+            {/* ── Flechas de flujo ── */}
+            <polygon points="323,376 328,360 333,376" fill="#1976d2" opacity="0.95"/>
+            <polygon points="204,89 190,94 204,99" fill="#d32f2f" opacity="0.95"/>
+            <polygon points="47,158 52,174 57,158" fill="#f57c00" opacity="0.95"/>
+            <polygon points="168,427 182,432 168,437" fill="#00897b" opacity="0.95"/>
+
+            {/* ════════════════════════════════════════════════
+                CONDENSADOR — ARRIBA
+                rect x=88 y=56 w=204 h=76  ← pipe level y=94
+                ════════════════════════════════════════════════ */}
+            <rect x="88" y="56" width="204" height="76" rx="14"
+              fill="rgba(211,47,47,0.06)" stroke="#d32f2f" strokeWidth="2" filter="url(#fSh)"/>
+            {/* Serrated coil */}
+            {[0,1,2].map(r=>{
+              const y0=70+r*18,y1=y0+10;
+              return <polyline key={r} fill="none" stroke="#d32f2f" strokeWidth="1.8" opacity="0.65"
+                strokeLinejoin="round"
+                points={`92,${y0} 104,${y1} 116,${y0} 128,${y1} 140,${y0} 152,${y1} 164,${y0} 176,${y1} 188,${y0} 200,${y1} 212,${y0} 224,${y1} 236,${y0} 248,${y1} 260,${y0} 272,${y1} 284,${y0}`}/>;
+            })}
+            <text x="190" y="121" textAnchor="middle" fontSize="9.5" fontWeight="800"
+              fill="#b71c1c" letterSpacing="1.5">CONDENSADOR</text>
+            <text x="190" y="108" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#d32f2f" opacity="0.6">
+              AP · {pHighPsig.toFixed(0)} psig
+            </text>
+            {/* Heat up arrows */}
+            {[120,155,190,225,260].map(x=>(
+              <g key={x} opacity="0.35">
+                <line x1={x} y1="56" x2={x} y2="36" stroke="#d32f2f" strokeWidth="1.4" strokeLinecap="round"/>
+                <polygon points={`${x-3},40 ${x},34 ${x+3},40`} fill="#d32f2f"/>
+              </g>
+            ))}
+            {qCond&&<text x="190" y="27" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#b71c1c" opacity="0.85">
+              ☀ {qCond} kW rechazados
+            </text>}
+
+            {/* ════════════════════════════════════════════════
+                COMPRESOR — DERECHA
+                Dome: M 305,261 Q arc  y=178-261
+                Body rect: x=305 y=261 w=46 h=82 → bottom y=343
+                ════════════════════════════════════════════════ */}
+            <path d="M 306,262 Q 306,178 328,178 Q 350,178 350,262"
+              fill="rgba(230,81,0,0.07)" stroke="#e65100" strokeWidth="2" filter="url(#fC)"/>
+            <rect x="306" y="262" width="44" height="81" rx="8"
+              fill="rgba(230,81,0,0.07)" stroke="#e65100" strokeWidth="2"/>
+            {/* Piston rods */}
+            <line x1="321" y1="178" x2="321" y2="236" stroke="#ef6c00" strokeWidth="1.4" opacity="0.35"/>
+            <line x1="335" y1="178" x2="335" y2="236" stroke="#ef6c00" strokeWidth="1.4" opacity="0.35"/>
+            <circle cx="328" cy="232" r="16" fill="rgba(255,255,255,0.8)" stroke="#ef6c00" strokeWidth="1.8" filter="url(#fC)"/>
+            {/* Motor circle */}
+            <circle cx="328" cy="306" r="24" fill="rgba(255,255,255,0.85)" stroke="#ef6c00" strokeWidth="2" filter="url(#fC)"/>
+            <text x="328" y="312" textAnchor="middle" fontSize="15" fontWeight="900" fill="#e65100">M</text>
+            {/* Port connectors */}
+            <rect x="316" y="339" width="24" height="6" rx="3" fill="#1976d2" opacity="0.75"/>
+            <rect x="316" y="175" width="24" height="6" rx="3" fill="#d32f2f" opacity="0.75"/>
+            <text x="374" y="266" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#bf360c"
+              transform="rotate(90 374 266)" letterSpacing="1">COMPRESOR</text>
+            <text x="374" y="284" textAnchor="middle" fontSize="7" fill="#e65100" opacity="0.8"
+              transform="rotate(90 374 284)">{potKW} kW · {(potKW*1.341).toFixed(1)} HP</text>
+
+            {/* ════════════════════════════════════════════════
+                EVAPORADOR — ABAJO
+                rect x=88 y=394 w=204 h=76  ← pipe level y=432
+                ════════════════════════════════════════════════ */}
+            <rect x="88" y="394" width="204" height="76" rx="14"
+              fill="rgba(25,118,210,0.06)" stroke="#1976d2" strokeWidth="2" filter="url(#fSh)"/>
+            {[0,1,2].map(r=>{
+              const y0=408+r*18,y1=y0+10;
+              return <polyline key={r} fill="none" stroke="#1976d2" strokeWidth="1.8" opacity="0.65"
+                strokeLinejoin="round"
+                points={`92,${y0} 104,${y1} 116,${y0} 128,${y1} 140,${y0} 152,${y1} 164,${y0} 176,${y1} 188,${y0} 200,${y1} 212,${y0} 224,${y1} 236,${y0} 248,${y1} 260,${y0} 272,${y1} 284,${y0}`}/>;
+            })}
+            <text x="190" y="459" textAnchor="middle" fontSize="9.5" fontWeight="800"
+              fill="#0d47a1" letterSpacing="1.5">EVAPORADOR</text>
+            <text x="190" y="403" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#1976d2" opacity="0.6">
+              BP · {pLowPsig.toFixed(0)} psig
+            </text>
+            {/* Heat down arrows */}
+            {[120,155,190,225,260].map(x=>(
+              <g key={x} opacity="0.35">
+                <line x1={x} y1="470" x2={x} y2="490" stroke="#1976d2" strokeWidth="1.4" strokeLinecap="round"/>
+                <polygon points={`${x-3},484 ${x},490 ${x+3},484`} fill="#1976d2"/>
+              </g>
+            ))}
+            {qEvap&&<text x="190" y="503" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#0d47a1" opacity="0.85">
+              ❄ {qEvap} kW absorbidos
+            </text>}
+
+            {/* ════════════════════════════════════════════════
+                VÁLVULA DE EXPANSIÓN — IZQUIERDA
+                Butterfly valve, center (52,263)
+                Top triangle: y=225-263 · Bottom: y=263-301
+                ════════════════════════════════════════════════ */}
+            <polygon points="30,225 74,225 52,263"
+              fill="rgba(46,125,50,0.08)" stroke="#388e3c" strokeWidth="2" filter="url(#fC)"/>
+            <polygon points="30,301 74,301 52,263"
+              fill="rgba(46,125,50,0.08)" stroke="#388e3c" strokeWidth="2"/>
+            {/* Center pin */}
+            <circle cx="52" cy="263" r="5" fill="#2e7d32"/>
+            {/* Stem */}
+            <line x1="52" y1="205" x2="52" y2="225" stroke="#388e3c" strokeWidth="1.5" opacity="0.5" strokeDasharray="3 3"/>
+            <text x="20" y="218" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#1b5e20"
+              transform="rotate(-90 20 218)" letterSpacing="1">EXPANSIÓN</text>
+
+            {/* ════════════════════════════════════════════════
+                ETIQUETAS DE ESTADO (4 puntos del ciclo)
+                ════════════════════════════════════════════════ */}
+            {/* T1 — gas aspirado + SH · derecho inferior */}
+            <rect x="334" y="368" width="40" height="34" rx="7" fill="rgba(25,118,210,0.10)"/>
+            <text x="354" y="381" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#1565c0">T₁={T1}°C</text>
+            <text x="354" y="395" textAnchor="middle" fontSize="7" fill="#1976d2">gas BP</text>
+
+            {/* T2 — descarga caliente · derecho superior */}
+            <rect x="240" y="62" width="40" height="34" rx="7" fill="rgba(211,47,47,0.10)"/>
+            <text x="260" y="75" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#c62828">T₂={T2}°C</text>
+            <text x="260" y="89" textAnchor="middle" fontSize="7" fill="#d32f2f">desc. AP</text>
+
+            {/* T3 — líquido sub-enfriado · izquierdo superior */}
+            <rect x="100" y="62" width="40" height="34" rx="7" fill="rgba(245,124,0,0.10)"/>
+            <text x="120" y="75" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#e65100">T₃={T3}°C</text>
+            <text x="120" y="89" textAnchor="middle" fontSize="7" fill="#f57c00">liq. AP</text>
+
+            {/* T4 — mezcla bifásica · izquierdo inferior */}
+            <rect x="58" y="396" width="40" height="34" rx="7" fill="rgba(0,137,123,0.10)"/>
+            <text x="78" y="409" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#00695c">T₄={T4}°C</text>
+            <text x="78" y="423" textAnchor="middle" fontSize="7" fill="#00897b">mix BP</text>
+
+            {/* ════════════════════════════════════════════════
+                BADGE CENTRAL — RC / COP / Gas
+                Centro del rectángulo interior: x=100-295 y=165-330
+                ════════════════════════════════════════════════ */}
+            <rect x="102" y="160" width="176" height="172" rx="20"
+              fill="#1B4F8A" filter="url(#fSh)"/>
+            <rect x="102" y="160" width="176" height="172" rx="20"
+              fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5"/>
+            {/* Subtle top highlight */}
+            <rect x="116" y="162" width="148" height="4" rx="2" fill="rgba(255,255,255,0.12)"/>
+            <text x="190" y="190" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.45)"
+              fontWeight="600" letterSpacing="0.5">
+              {gas.antonName||gas.name}
+            </text>
+            <line x1="118" y1="196" x2="262" y2="196" stroke="rgba(255,255,255,0.10)" strokeWidth="1"/>
+            <text x="190" y="228" textAnchor="middle" fontSize="24" fontWeight="900" fill="white" letterSpacing="0.3">
+              RC = {rc.toFixed(2)}
+            </text>
+            <line x1="118" y1="240" x2="262" y2="240" stroke="rgba(255,255,255,0.10)" strokeWidth="1"/>
+            {copReal&&<text x="190" y="270" textAnchor="middle" fontSize="19" fontWeight="700"
+              fill="rgba(144,202,249,0.95)">
+              COP = {copReal}
+            </text>}
+            <line x1="118" y1="282" x2="262" y2="282" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+            <text x="190" y="300" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.38)">
+              ΔT lift = {tcond-tevap}°C
+            </text>
+            {eer&&<text x="190" y="318" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.38)">
+              EER = {eer} BTU/h·W
+            </text>}
+
+          </svg>
+
+          {/* ── Leyenda ── */}
+          <div style={{display:'flex',flexWrap:'wrap',gap:'4px 16px',padding:'4px 12px 8px',justifyContent:'center'}}>
+            {[['#1976d2','Aspiración BP'],['#d32f2f','Descarga AP'],['#f57c00','Líquido AP'],['#00897b','Mezcla BP']].map(([c,l])=>(
+              <div key={l} style={{display:'flex',alignItems:'center',gap:5,fontSize:10,color:'var(--sub)'}}>
+                <div style={{width:22,height:4,borderRadius:2,background:c}}/>
+                <span>{l}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div style={{padding:32,textAlign:'center',color:'var(--sub)',fontSize:13}}>
+          Ajustá los parámetros para simular el ciclo.
+        </div>
+      )}
+
+      {valid&&qEvap&&(
+        <div style={{margin:'0 12px 16px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:7}}>
+          {[
+            {lbl:'⚡ Potencia entrada', val:`${potKW} kW`, sub:`${(potKW*1.341).toFixed(1)} HP`, c:'#e65100', bg:'rgba(230,81,0,0.06)'},
+            {lbl:'❄ Cap. frigorífica',  val:`${qEvap} kW`, sub:`${tons} TR · ${(qEvap*860).toFixed(0)} kcal/h`, c:'#1565c0', bg:'rgba(25,118,210,0.06)'},
+            {lbl:'☀ Calor rechazado',   val:`${qCond} kW`, sub:'Q_evap + W_comp', c:'#b71c1c', bg:'rgba(183,28,28,0.06)'},
+            {lbl:'📊 COP / EER',         val:String(copReal), sub:`EER: ${eer} BTU/h·W`, c:'#1B4F8A', bg:'var(--card)'},
+          ].map(x=>(
+            <div key={x.lbl} style={{background:x.bg,borderRadius:10,padding:'9px 11px',
+              border:`1.5px solid ${x.c}28`}}>
+              <div style={{fontSize:9.5,color:x.c,fontWeight:700,marginBottom:2}}>{x.lbl}</div>
+              <div style={{fontSize:18,fontWeight:800,color:x.c,lineHeight:1.1}}>{x.val}</div>
+              <div style={{fontSize:9,color:'var(--sub)',marginTop:2}}>{x.sub}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+// ── Carnot Screen ─────────────────────────────────────────────────────────────
+function CarnotScreen(){
+  const [tevap,setTevap]=React.useState('-10');
+  const [tcond,setTcond]=React.useState('45');
+  const [gasId,setGasId]=React.useState('R410A');
+  const Te=parseFloat(tevap),Tc=parseFloat(tcond);
+  const gas=GASES[gasId];
+  const valid=!isNaN(Te)&&!isNaN(Tc)&&Tc>Te;
+  const TeK=Te+273.15,TcK=Tc+273.15;
+  const copCarnot=valid?TeK/(TcK-TeK):null;
+  const copHP=valid?TcK/(TcK-TeK):null;
+  const eta=valid?(1-TeK/TcK)*100:null;
+  const copReal=valid?copCarnot*0.55:null;
+  const pEvap=valid?interpBar(gas,tevap):null;
+  const pCond=valid?interpBar(gas,tcond):null;
+  const rc=pEvap&&pCond?pCond/pEvap:null;
+  function interpBar2(gas,t){return interpBar(gas,t);}
+  return (
+    <div className="content" style={{paddingTop:8}}>
+      <div className="divider">Eficiencia de Carnot</div>
+      <div className="sim-card">
+        <div className="sim-label">Gas Refrigerante</div>
+        <select className="sim-input" value={gasId} onChange={e=>setGasId(e.target.value)}>
+          {GAS_LIST.map(g=><option key={g.id} value={g.id}>{g.antonName||g.name}</option>)}
+        </select>
+      </div>
+      <div className="carnot-panel">
+        <div className="carnot-panel-header">Temperaturas del Ciclo</div>
+        <div className="carnot-temp-row">
+          <div className="carnot-temp-box" style={{background:'#2980b9'}}>
+            <div className="carnot-temp-val">{tevap}°C</div>
+            <div className="carnot-temp-lbl">T° Evaporación</div>
+            <input type="range" min="-50" max="20" value={tevap} onChange={e=>setTevap(e.target.value)} style={{width:'100%',marginTop:6,accentColor:'#fff'}}/>
+          </div>
+          <div className="carnot-arrow">→</div>
+          <div className="carnot-temp-box" style={{background:'#e74c3c'}}>
+            <div className="carnot-temp-val">{tcond}°C</div>
+            <div className="carnot-temp-lbl">T° Condensación</div>
+            <input type="range" min="25" max="70" value={tcond} onChange={e=>setTcond(e.target.value)} style={{width:'100%',marginTop:6,accentColor:'#fff'}}/>
+          </div>
+        </div>
+        {valid&&pEvap&&pCond&&(
+          <div className="carnot-pressure-row">
+            <div className="carnot-pres-item"><div className="carnot-pres-val" style={{color:'#2980b9'}}>{barToPsig(pEvap).toFixed(0)} psig</div><div className="carnot-pres-label">P Baja · {pEvap.toFixed(2)} bar</div></div>
+            <div className="carnot-pres-item"><div className="carnot-pres-val" style={{color:'#e74c3c'}}>{barToPsig(pCond).toFixed(0)} psig</div><div className="carnot-pres-label">P Alta · {pCond.toFixed(2)} bar</div></div>
+            {rc&&<div className="carnot-pres-item"><div className="carnot-pres-val">{rc.toFixed(2)}</div><div className="carnot-pres-label">Relación Compresión</div></div>}
+          </div>
+        )}
+      </div>
+      {valid&&(<>
+        <div className="carnot-panel">
+          <div className="carnot-panel-header">COP — Coeficiente de Rendimiento</div>
+          <div className="cop-row">
+            <div className="cop-cell"><div className="cop-lbl">COP Carnot (Refrig.)</div><div className="cop-val">{copCarnot.toFixed(2)}</div><div className="cop-sub">Límite teórico</div></div>
+            <div className="cop-cell"><div className="cop-lbl">COP Real (~55%)</div><div className="cop-val" style={{color:'#0a7e4f'}}>{copReal.toFixed(2)}</div><div className="cop-sub">Sistema real est.</div></div>
+            <div className="cop-cell"><div className="cop-lbl">COP Bomba Calor</div><div className="cop-val">{copHP.toFixed(2)}</div><div className="cop-sub">Carnot HP</div></div>
+          </div>
+          <div className="cop-bar-wrap">
+            <div className="cop-bar-label">COP Carnot</div>
+            <div className="cop-bar-track"><div className="cop-bar-fill" style={{width:`${Math.min(copCarnot/10*100,100)}%`}}/></div>
+          </div>
+          <div className="cop-bar-wrap">
+            <div className="cop-bar-label">COP Real estimado</div>
+            <div className="cop-bar-track"><div className="cop-bar-fill real" style={{width:`${Math.min(copReal/10*100,100)}%`}}/></div>
+          </div>
+        </div>
+        <div className="carnot-panel">
+          <div className="carnot-panel-header">Eficiencia Termodinámica</div>
+          <div className="cop-row">
+            <div className="cop-cell"><div className="cop-lbl">η Carnot</div><div className="cop-val">{eta.toFixed(1)}%</div><div className="cop-sub">Eficiencia ciclo</div></div>
+            <div className="cop-cell"><div className="cop-lbl">ΔT Ciclo</div><div className="cop-val">{(Tc-Te).toFixed(0)}°C</div><div className="cop-sub">Diferencial</div></div>
+            <div className="cop-cell"><div className="cop-lbl">EER equiv.</div><div className="cop-val">{(copReal*3.412).toFixed(1)}</div><div className="cop-sub">BTU/h·W</div></div>
+          </div>
+        </div>
+      </>)}
+      {!valid&&<div style={{padding:20,textAlign:'center',color:'#888',fontSize:13}}>T° condensación debe ser mayor a T° evaporación.</div>}
+      <div style={{height:16}}/>
+    </div>
+  );
+}
+// ── Aplicacion Screen ─────────────────────────────────────────────────────────
+function AplicacionScreen(){
+  const APPS=[
+    {id:'ac_residencial',    icon:'🏠', lbl:'AC Residencial'},
+    {id:'ac_comercial',      icon:'🏢', lbl:'AC Comercial'},
+    {id:'camara_media',      icon:'❄️',  lbl:'Cámara Media Temp.'},
+    {id:'camara_baja',       icon:'🧊', lbl:'Cámara Baja Temp.'},
+    {id:'comercial_supermarket',icon:'🏪',lbl:'Supermercado'},
+    {id:'transporte',        icon:'🚛', lbl:'Transporte Frío'},
+    {id:'bomba_calor',       icon:'♨️', lbl:'Bomba de Calor'},
+    {id:'heladera',          icon:'🫙', lbl:'Heladera Doméstica'},
+    {id:'automotriz',        icon:'🚗', lbl:'Automotriz'},
+    {id:'centrifugo',        icon:'🏗️', lbl:'Chillers / Centrífugos'},
+    {id:'industrial',        icon:'🏭', lbl:'Industrial'},
+  ];
+  const CAT_COL={HFC:'#2980b9',HFO:'#27ae60',Blend:'#8e44ad',HC:'#e67e22',HCFC:'#7f8c8d'};
+  const [selApp,setSelApp]=React.useState(null);
+  const [selCat,setSelCat]=React.useState('Todos');
+  const [selGas,setSelGas]=React.useState(null);
+
+  const matched = selApp
+    ? GAS_LIST.filter(g=>(g.applications||[]).includes(selApp))
+              .filter(g=>selCat==='Todos'||g.category===selCat)
+              .sort((a,b)=>a.gwp-b.gwp)
+    : [];
+
+  const cats = selApp
+    ? ['Todos',...[...new Set(GAS_LIST.filter(g=>(g.applications||[]).includes(selApp)).map(g=>g.category))].sort()]
+    : [];
+
+  if(selGas){
+    const g=selGas;
+    const col=CAT_COL[g.category]||'#555';
+    return(
+      <div className="content" style={{paddingTop:8}}>
+        <button onClick={()=>setSelGas(null)}
+          style={{margin:'0 12px 8px',background:'none',border:'none',color:'#1B4F8A',fontSize:13,fontWeight:700,cursor:'pointer',padding:0}}>
+          ← Volver
+        </button>
+        <div style={{margin:'0 12px'}}>
+          <div style={{background:col,borderRadius:12,padding:'14px 16px',marginBottom:10}}>
+            <div style={{fontSize:10,color:'rgba(255,255,255,0.7)',fontWeight:600,marginBottom:2}}>{g.category} · {g.ashraeSafety}</div>
+            <div style={{fontSize:20,fontWeight:900,color:'white'}}>{g.antonName||g.name}</div>
+            <div style={{fontSize:11,color:'rgba(255,255,255,0.8)',marginTop:2}}>{g.formula}</div>
+          </div>
+          {g.warn&&<div style={{background:'#fff8e1',border:'1px solid #f39c12',borderRadius:8,padding:'8px 10px',fontSize:11,color:'#856404',marginBottom:8}}>{g.warn}</div>}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+            {[
+              ['GWP',g.gwp===0?'0 (natural)':g.gwp],
+              ['P.E. Normal',`${g.normalBoilingPoint}°C`],
+              ['Peso Molecular',`${g.mw} g/mol`],
+              ['P. Crítica',`${g.criticalPressure} bar`],
+              ['Deslizamiento',g.deslizamiento?`${g.deslizamiento}°C`:'Azeotrópico'],
+              ['Aceite',g.aceite],
+            ].map(([k,v])=>(
+              <div key={k} style={{background:'#f7f9ff',borderRadius:8,padding:'8px 10px',border:'1px solid #e8eef7'}}>
+                <div style={{fontSize:9.5,color:'#888',fontWeight:600}}>{k}</div>
+                <div style={{fontSize:13,fontWeight:700,color:'#1B4F8A',marginTop:1}}>{v}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{background:'#f7f9ff',borderRadius:8,padding:'10px 12px',marginBottom:8}}>
+            <div style={{fontSize:10,color:'#888',fontWeight:600,marginBottom:4}}>ACEITE RECOMENDADO</div>
+            <div style={{fontSize:12,color:'#333'}}>{g.aceiteNota||g.aceite}</div>
+          </div>
+          <div style={{background:'#f7f9ff',borderRadius:8,padding:'10px 12px',marginBottom:8}}>
+            <div style={{fontSize:10,color:'#888',fontWeight:600,marginBottom:4}}>DESCRIPCIÓN</div>
+            <div style={{fontSize:12,color:'#333',lineHeight:1.5}}>{g.description}</div>
+          </div>
+          {(g.replacementFor||[]).length>0&&(
+            <div style={{background:'#e8f5e9',borderRadius:8,padding:'10px 12px',border:'1px solid #27ae6022'}}>
+              <div style={{fontSize:10,color:'#27ae60',fontWeight:700,marginBottom:4}}>REEMPLAZA A</div>
+              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                {g.replacementFor.map(r=><span key={r} style={{background:'white',border:'1px solid #27ae6044',borderRadius:6,padding:'3px 8px',fontSize:12,fontWeight:700,color:'#1a7a40'}}>{r}</span>)}
+              </div>
+            </div>
+          )}
+        </div>
+        <div style={{height:20}}/>
+      </div>
+    );
+  }
+
+  return(
+    <div className="content" style={{paddingTop:8}}>
+      <div className="divider">Elegí por Aplicación</div>
+
+      {!selApp ? (
+        <div style={{padding:'0 12px'}}>
+          <div style={{fontSize:12,color:'#888',marginBottom:12}}>Seleccioná el tipo de sistema para ver los gases recomendados.</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+            {APPS.map(a=>(
+              <button key={a.id} onClick={()=>{setSelApp(a.id);setSelCat('Todos');setSelGas(null);}}
+                style={{background:'white',border:'1.5px solid #1B4F8A22',borderRadius:12,padding:'14px 8px',
+                  cursor:'pointer',textAlign:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.07)',
+                  WebkitTapHighlightColor:'transparent'}}>
+                <div style={{fontSize:24,marginBottom:6}}>{a.icon}</div>
+                <div style={{fontSize:11,fontWeight:700,color:'#1B4F8A',lineHeight:1.3}}>{a.lbl}</div>
+              </button>
+            ))}
+          </div>
+          <div style={{height:20}}/>
+        </div>
+      ) : (
+        <div>
+          {/* Back + app header */}
+          <div style={{padding:'0 12px 8px',display:'flex',alignItems:'center',gap:10}}>
+            <button onClick={()=>{setSelApp(null);setSelCat('Todos');}}
+              style={{background:'none',border:'none',color:'#1B4F8A',fontSize:13,fontWeight:700,cursor:'pointer',padding:0,flexShrink:0}}>
+              ← Volver
+            </button>
+            <div style={{fontSize:13,fontWeight:800,color:'#1B4F8A'}}>
+              {APPS.find(a=>a.id===selApp)?.icon} {APPS.find(a=>a.id===selApp)?.lbl}
+            </div>
+          </div>
+
+          {/* Category filter pills */}
+          {cats.length>2&&(
+            <div style={{display:'flex',gap:6,padding:'0 12px 10px',overflowX:'auto',WebkitOverflowScrolling:'touch'}}>
+              {cats.map(c=>(
+                <button key={c} onClick={()=>setSelCat(c)}
+                  style={{flexShrink:0,padding:'5px 12px',borderRadius:20,border:`1.5px solid ${c==='Todos'?'#1B4F8A':CAT_COL[c]||'#888'}55`,
+                    background:selCat===c?(c==='Todos'?'#1B4F8A':CAT_COL[c]||'#555'):'white',
+                    color:selCat===c?'white':(c==='Todos'?'#1B4F8A':CAT_COL[c]||'#555'),
+                    fontSize:11,fontWeight:700,cursor:'pointer',WebkitTapHighlightColor:'transparent'}}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Gas cards */}
+          <div style={{padding:'0 12px'}}>
+            {matched.length===0&&<div style={{textAlign:'center',color:'#aaa',padding:24,fontSize:13}}>Sin resultados para este filtro.</div>}
+            {matched.map(g=>{
+              const col=CAT_COL[g.category]||'#555';
+              const gwpLbl=g.gwp<=10?'Ultra bajo':g.gwp<=750?'Bajo':g.gwp<=2000?'Medio':'Alto';
+              const gwpC=g.gwp<=10?'#27ae60':g.gwp<=750?'#2980b9':g.gwp<=2000?'#e67e22':'#e74c3c';
+              return(
+                <div key={g.id} onClick={()=>setSelGas(g)}
+                  style={{background:'white',borderRadius:12,border:`1.5px solid ${col}22`,
+                    padding:'12px 14px',marginBottom:9,boxShadow:'0 1px 4px rgba(0,0,0,0.07)',cursor:'pointer'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                    <div>
+                      <span style={{display:'inline-block',background:col,color:'white',borderRadius:6,
+                        padding:'2px 8px',fontSize:11,fontWeight:800,marginRight:6}}>{g.category}</span>
+                      <span style={{fontSize:15,fontWeight:900,color:'#1B4F8A'}}>{g.antonName||g.name}</span>
+                    </div>
+                    <span style={{fontSize:10,color:gwpC,fontWeight:700,background:`${gwpC}18`,
+                      borderRadius:5,padding:'2px 6px',flexShrink:0}}>GWP {gwpLbl}</span>
+                  </div>
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:6}}>
+                    {[
+                      [`GWP: ${g.gwp}`,'#555'],
+                      [g.ashraeSafety, g.ashraeSafety==='A3'?'#e74c3c':g.ashraeSafety==='A2L'?'#e67e22':'#27ae60'],
+                      [`PE: ${g.normalBoilingPoint}°C`,'#555'],
+                      [g.aceite,'#888'],
+                    ].map(([t,c])=>(
+                      <span key={t} style={{fontSize:10,color:c,background:'#f5f5f5',borderRadius:5,padding:'2px 7px',fontWeight:600}}>{t}</span>
+                    ))}
+                  </div>
+                  <div style={{fontSize:11,color:'#666',lineHeight:1.4}}>
+                    {g.description.length>90?g.description.slice(0,90)+'…':g.description}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{height:20}}/>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Teoria Screen ─────────────────────────────────────────────────────────────
+function TeoriaScreen(){
+  const [open,setOpen]=React.useState({});
+  const toggle=k=>setOpen(p=>({...p,[k]:!p[k]}));
+  const conceptos=[
+    {id:'ciclo',icon:'🔄',title:'Ciclo de Refrigeración por Compresión',badge:'Fundamental',bc:'#1B4F8A',
+     quick:'Un sistema de refrigeración mueve calor desde un espacio frío hacia uno caliente usando un gas que circula en 4 etapas: evaporación → compresión → condensación → expansión.',
+     deep:`4 procesos termodinámicos:
+
+1. EVAPORACIÓN (baja P): El refrigerante líquido absorbe calor y se evapora. Ocurre entre -30°C y +10°C.
+2. COMPRESIÓN: El compresor eleva la presión y temperatura del gas. Único proceso que consume energía eléctrica.
+3. CONDENSACIÓN (alta P): El gas caliente cede calor al ambiente y se condensa en líquido. Ocurre entre 30°C y 60°C.
+4. EXPANSIÓN: La válvula (capilar o TXV) reduce la presión bruscamente, bajando la temperatura.`,
+     refs:['Evaporación','Compresión','Condensación','Expansión','P-H Diagrama']},
+    {id:'pt',icon:'📈',title:'Presión de Saturación — Curva P-T',badge:'Esencial',bc:'#0a7e4f',
+     quick:'A cada temperatura le corresponde una única presión de saturación. Si sabés la presión en el evaporador, sabés la temperatura de evaporación. Base del diagnóstico de campo.',
+     deep:`Con un manómetro en aspiración:
+• Presión baja → T° evap. baja → posible falta de carga o restricción
+• Presión alta → T° evap. alta → posible exceso de carga o válvula trabada
+
+En mezclas zeotrópmicas hay diferencia entre punto de burbuja (inicio ebullición) y punto de rocío (fin evaporación). Esa diferencia es el GLIDE.`,
+     refs:['Glide','Punto de burbuja','Punto de rocío','Manómetro']},
+    {id:'sh',icon:'🌡️',title:'Superheat — Recalentamiento',badge:'Campo',bc:'#7b3fa0',
+     quick:'Superheat = T° línea aspiración − T° saturación a esa presión. Valor ideal en TXV: 4–8°C. Indica cuánto calor extra absorbió el gas por encima de su punto de ebullición.',
+     deep:`• Superheat muy bajo (<3°C): riesgo de líquido en compresor → daño mecánico
+• Superheat muy alto (>20°C en TXV): falta de carga, TXV mal calibrada o restricción
+• Rango ideal TXV: 4–8°C | Capilar: 8–15°C`,
+     formula:'SH = T_línea_aspiración − T_saturación(P_aspiración)',
+     refs:['TXV','Capilar','Carga de refrigerante']},
+    {id:'sc',icon:'❄️',title:'Subcooling — Subenfriamiento',badge:'Campo',bc:'#7b3fa0',
+     quick:'Subcooling = T° saturación en alta presión − T° línea de líquido. Previene flash gas. Ideal: 4–8°C.',
+     deep:`• SC < 2°C: posible flash gas, poca carga o condensador sobredimensionado
+• SC 4–8°C: rango ideal
+• SC > 10°C: posible exceso de carga
+
+El flash gas deteriora el funcionamiento de la TXV y reduce la capacidad frigorífica.`,
+     formula:'SC = T_saturación(P_descarga) − T_línea_líquido',
+     refs:['Flash gas','Condensador','Línea de líquido']},
+    {id:'glide',icon:'↕️',title:'Deslizamiento de Temperatura — Glide',badge:'Mezclas',bc:'#b85c00',
+     quick:'En mezclas zeotrópmicas la temperatura de ebullición varía durante el cambio de fase. El glide es la diferencia entre punto de rocío y punto de burbuja.',
+     deep:`PUNTO DE BURBUJA: temperatura a la que comienza la ebullición. Es la que lee el manómetro.
+PUNTO DE ROCÍO: temperatura a la que termina la evaporación.
+
+Ejemplos:
+• R407C: glide ~7.2°C
+• AN22 (R417B): glide ~1.5°C — casi como gas puro
+• R407F: glide ~5.5°C
+
+El manómetro lee la presión del punto de burbuja. La T° real del vapor es el punto de rocío.`,
+     refs:['Punto de burbuja','Punto de rocío','AN22','R407C']},
+    {id:'gwp',icon:'🌍',title:'GWP — Potencial de Calentamiento Global',badge:'Ambiental',bc:'#0a7e4f',
+     quick:'GWP mide cuánto calienta el planeta 1 kg de gas vs 1 kg de CO₂ en 100 años. CO₂=1 por definición. R410A=2088: calienta 2088 veces más.',
+     deep:`Escala GWP:
+• GWP < 10: HFOs (R1234yf=4, R1234ze=7)
+• GWP 100-700: bajo GWP (R513A=631, R454B=466)
+• GWP 700-2000: medio (R32=675, R407C=1774)
+• GWP > 2000: alto (R410A=2088, R404A=3922)
+
+La Enmienda de Kigali exige reducir HFCs en 85% para 2047. Los gases Solstice® de Honeywell (distribuidos por Anton) cumplen las regulaciones actuales y futuras.`,
+     refs:['HFC','HFO','Enmienda Kigali','Phase-down','Solstice®']},
+    {id:'cop',icon:'⚡',title:'COP y EER — Eficiencia del Sistema',badge:'Eficiencia',bc:'#1B4F8A',
+     quick:'COP = calor transferido / trabajo eléctrico consumido. COP=3 significa que por cada 1 kW eléctrico se mueven 3 kW de calor. Más alto es mejor.',
+     deep:`COP Refrigeración: Q_evap / W_compresor. Valores típicos: 2.5–4.5 (AC), 1.5–3.5 (refrigeración comercial).
+COP Bomba de Calor: Q_cond / W_comp = COP_R + 1. Siempre mayor.
+EER = COP × 3.412 (BTU/h por watt).
+COP de Carnot (límite teórico): T_evap(K) / (T_cond - T_evap) [en Kelvin]
+Los sistemas reales operan al 40–60% del COP de Carnot.`,
+     formula:'COP_R = T_evap(K) / (T_cond − T_evap) [Kelvin]',
+     refs:['Carnot','EER','SEER','Eficiencia']},
+    {id:'ashrae',icon:'🛡️',title:'Clases de Seguridad ASHRAE',badge:'Seguridad',bc:'#c0392b',
+     quick:'ASHRAE clasifica gases en A (baja toxicidad) o B (alta) y en 1 (no inflamable), 2L (levemente inflamable), 2 (inflamable) o 3 (altamente inflamable). A1 es el más seguro.',
+     deep:`Toxicidad: A = sin toxicidad identificada | B = evidencia de toxicidad
+Inflamabilidad: 1 = no inflamable | 2L = levemente inflamable (llama ≤10 cm/s) | 2 = inflamable | 3 = altamente inflamable
+
+Clases comunes:
+• A1: R22, R410A, R134a, R404A, R407C/F, AN22, YH12, R448A, R449A, R513A
+• A2L: R32, R454B, R454C, R455A, R1234yf — requieren precauciones
+• A3: R290 (propano), R600a (isobutano) — cargas <150g`,
+     refs:['A1','A2L','A3','R32','R290']},
+    {id:'rc',icon:'🔧',title:'Relación de Compresión',badge:'Compresor',bc:'#5a6275',
+     quick:'RC = P_descarga / P_aspiración (presión absoluta). Indica el esfuerzo del compresor. Rango ideal: 3–6. Por encima de 8 hay riesgo de sobrecalentamiento y falla.',
+     deep:`RC = P_cond_abs / P_evap_abs
+
+Interpretación:
+• RC < 3: compresor trabajando poco, posible problema
+• RC 3–6: rango normal y eficiente
+• RC 6–8: trabajo intenso, posibles altas T° de descarga
+• RC > 8: riesgo de falla, degradación del aceite, daño al compresor
+
+Para baja temperatura (congelados, -30°C) la RC es mayor que para AC. Con RC alto se usan 2 etapas de compresión o economizadores.`,
+     formula:'RC = P_cond_abs / P_evap_abs     [presiones en bar abs o psia]',
+     refs:['Compresor','T° de descarga','Dos etapas']},
+    {id:'aceites',icon:'🛢️',title:'Aceites Lubricantes',badge:'Lubricación',bc:'#b85c00',
+     quick:'El aceite lubrica el compresor y circula por el sistema. Debe ser miscible con el gas para retornar al compresor. Usar aceite incorrecto puede destruir el compresor.',
+     deep:`MINERAL: Compatible con HC y con AN22/YH12. Bajo costo. No compatible con HFCs ni HFOs puros.
+ALQUILBENCENO (AB): Compatible con R22, AN22 y YH12. Ventaja clave: AN22 y YH12 NO requieren cambio de aceite en sistemas R22.
+POE (Polioléster): Obligatorio con HFCs (R410A, R32, R407C/F, R404A, R448A, R449A). Absorbe humedad — no dejar expuesto al aire.
+PAG: Usado en automotriz con R134a y R1234yf.
+
+REGLA: Nunca mezclar tipos de aceite. En conversión R22→R407F, hacer flush antes de cargar POE.
+EXCEPCIÓN AN22/YH12: compatibles con aceite mineral existente. No requieren flush en la mayoría de los casos.`,
+     refs:['POE','PAG','Mineral','AB','AN22','YH12','Flush']},
+  ];
+  return (
+    <div className="content" style={{paddingTop:8}}>
+      <div className="divider">Marco Teórico — Conceptos Clave</div>
+      <div style={{margin:'0 12px 8px',padding:'10px 12px',background:'var(--anton-light)',borderRadius:8,fontSize:12,color:'var(--anton)'}}>
+        Tocá cada concepto para ver el resumen de campo y la explicación profunda.
+      </div>
+      {conceptos.map(c=>(
+        <div className="teoria-card" key={c.id}>
+          <div className="teoria-header" onClick={()=>toggle(c.id)}>
+            <div style={{display:'flex',alignItems:'center',gap:10,flex:1}}>
+              <span style={{fontSize:22}}>{c.icon}</span>
+              <div>
+                <div className="teoria-title">{c.title}</div>
+                <span className="teoria-badge" style={{background:c.bc+'22',color:c.bc}}>{c.badge}</span>
+              </div>
+            </div>
+            <span style={{fontSize:16,color:'var(--subtext)',marginLeft:8}}>{open[c.id]?'▲':'▼'}</span>
+          </div>
+          {open[c.id]&&(
+            <div className="teoria-body">
+              <div className="teoria-quick"><div className="teoria-quick-label">📌 Resumen de campo</div><div className="teoria-quick-text">{c.quick}</div></div>
+              <div className="teoria-deep" style={{whiteSpace:'pre-line'}}>{c.deep}</div>
+              {c.formula&&<div className="teoria-formula">{c.formula}</div>}
+              <div className="teoria-ref-row">{c.refs.map(r=><span key={r} className="teoria-ref">{r}</span>)}</div>
+            </div>
+          )}
+        </div>
+      ))}
+      <div style={{height:20}}/>
+    </div>
+  );
+}
+// ── Auth helpers ──────────────────────────────────────────────────────────────
+const LOGO_SRC="data:image/png;base64,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";
+
+// ── Error Boundary ────────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component{
+  constructor(p){super(p);this.state={error:null};}
+  static getDerivedStateFromError(e){return{error:e};}
+  componentDidCatch(e,i){console.error('[Anton]',e,i);}
+  render(){
+    if(this.state.error) return (
+      <div style={{padding:32,textAlign:'center',color:'var(--sub)'}}>
+        <div style={{fontSize:40,marginBottom:12}}>⚠️</div>
+        <div style={{fontSize:15,fontWeight:700,color:'var(--text)',marginBottom:8}}>
+          Algo salió mal en esta pantalla
+        </div>
+        <div style={{fontSize:13,marginBottom:20}}>{this.state.error.message}</div>
+        <button style={{padding:'10px 24px',background:'var(--anton)',color:'#fff',border:'none',
+          borderRadius:10,cursor:'pointer',fontSize:14,fontWeight:600}}
+          onClick={()=>this.setState({error:null})}>Reintentar</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+// ── Charge Calculator Screen ───────────────────────────────────────────────────
+function CargaScreen(){
+  const [kw,setKw]=React.useState('');
+  const [cop,setCop]=React.useState('3.5');
+  const [app,setApp]=React.useState('ac');
+  const [sc,setSc]=React.useState('5');
+  const [density,setDensity]=React.useState('');
+
+  // App presets: typical liquid density at condensing temp (kg/m³) as rough guide
+  const appPresets={
+    ac:{label:'Aire Acondicionado',copDefault:'3.2',densDefault:'1080'},
+    camara:{label:'Cámara Frigorífica Media',copDefault:'2.5',densDefault:'1150'},
+    baja:{label:'Cámara Baja Temperatura',copDefault:'1.8',densDefault:'1200'},
+    bomba:{label:'Bomba de Calor',copDefault:'4.0',densDefault:'1060'},
+  };
+  React.useEffect(()=>{
+    const p=appPresets[app];
+    setCop(p.copDefault);
+    setDensity(p.densDefault);
+  },[app]);
+
+  const kwNum=parseFloat(kw)||0;
+  const copNum=parseFloat(cop)||3;
+  const scNum=parseFloat(sc)||5;
+  // Q_evap = kW_comp * COP; Q_cond = kW_comp * (COP+1)
+  const Q_evap=kwNum*copNum;
+  const Q_cond=kwNum*(copNum+1);
+  // Mass flow: ṁ = Q_evap / (h_evap - h_liq)
+  // Simplified: enthalpy diff ≈ 160 kJ/kg typical for HFCs at standard conditions
+  const dH_approx=160; // kJ/kg
+  const massFlow=Q_evap>0?(Q_evap/dH_approx*3600):0; // kg/hr
+  // Charge estimate: based on typical system volume
+  // Rule of thumb: 1.5–2.5 kg per kW for AC, varies
+  const chargeFactors={ac:1.8,camara:2.2,baja:2.8,bomba:1.6};
+  const chargeEst=kwNum*chargeFactors[app];
+
+  return (
+    <div className="content">
+      <div className="bib-header">
+        <div className="bib-title">Calculadora de Carga</div>
+        <div className="bib-sub">Estimación de carga de gas refrigerante</div>
+      </div>
+      <div className="carga-section">
+        <div className="carga-card">
+          <div className="carga-title">Datos del sistema</div>
+          <div className="carga-row">
+            <span className="carga-label">Tipo de aplicación</span>
+            <select className="carga-select" value={app} onChange={e=>setApp(e.target.value)}>
+              {Object.entries(appPresets).map(([k,v])=>(
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="carga-row">
+            <span className="carga-label">Potencia compresor (kW)</span>
+            <input className="carga-input" type="number" placeholder="ej: 5.5"
+              value={kw} onChange={e=>setKw(e.target.value)}/>
+          </div>
+          <div className="carga-row">
+            <span className="carga-label">COP estimado</span>
+            <input className="carga-input" type="number" step="0.1" placeholder="3.5"
+              value={cop} onChange={e=>setCop(e.target.value)}/>
+          </div>
+          <div className="carga-row">
+            <span className="carga-label">Subcooling objetivo (°C)</span>
+            <input className="carga-input" type="number" placeholder="5"
+              value={sc} onChange={e=>setSc(e.target.value)}/>
+          </div>
+        </div>
+
+        {kwNum>0?(
+          <div>
+            <div className="carga-result">
+              <div className="carga-result-val">{chargeEst.toFixed(1)}</div>
+              <div className="carga-result-unit">kg de refrigerante estimados</div>
+              <div className="carga-result-sub">Estimación ±20% — verificar con cálculo detallado</div>
+            </div>
+            <div className="carga-grid" style={{marginTop:10}}>
+              <div className="carga-mini">
+                <div className="carga-mini-val">{Q_evap.toFixed(1)} kW</div>
+                <div className="carga-mini-lbl">Capacidad frigorífica</div>
+              </div>
+              <div className="carga-mini">
+                <div className="carga-mini-val">{Q_cond.toFixed(1)} kW</div>
+                <div className="carga-mini-lbl">Calor de condensación</div>
+              </div>
+              <div className="carga-mini">
+                <div className="carga-mini-val">{massFlow.toFixed(0)} kg/h</div>
+                <div className="carga-mini-lbl">Flujo másico aprox.</div>
+              </div>
+              <div className="carga-mini">
+                <div className="carga-mini-val">{(kwNum*(copNum+1)/kwNum).toFixed(2)}</div>
+                <div className="carga-mini-lbl">Q_cond/W ratio</div>
+              </div>
+            </div>
+            <div style={{background:'var(--anton-l)',borderRadius:10,padding:12,marginTop:10,fontSize:12,color:'var(--sub)',lineHeight:1.6}}>
+              <strong style={{color:'var(--anton)'}}>⚠️ Nota:</strong> Esta es una estimación orientativa basada en 
+              factores típicos por tipo de aplicación. La carga real depende del gas seleccionado, longitud de tuberías, 
+              condiciones de diseño y especificaciones del fabricante del compresor.
+            </div>
+          </div>
+        ):(
+          <div className="empty">
+            <div className="empty-icon">⚖️</div>
+            <div className="empty-text">Ingresá la potencia del compresor<br/>para calcular la carga estimada</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SplashScreen(){
+  return (
+    <div className="auth-screen">
+      <img src={LOGO_SRC} className="splash-logo" alt="Anton Company"/>
+      <div className="splash-tagline">Guía Técnica de Refrigerantes</div>
+      <div className="splash-dot"/>
+    </div>
+  );
+}
+
+function LoginScreen({onLogin,onRegister}){
+  const [email,setEmail]=React.useState('');
+  const [pass,setPass]=React.useState('');
+  const [err,setErr]=React.useState('');
+  const [loading,setLoading]=React.useState(false);
+
+  const handleLogin=async()=>{
+    setErr('');
+    if(!email||!pass){setErr('Completá todos los campos.');return;}
+    setLoading(true);
+    try{
+      const users=JSON.parse(localStorage.getItem('anton_users')||'[]');
+      const hashed=await hashPass(pass);
+      const u=users.find(x=>x.email.toLowerCase()===email.toLowerCase()&&
+        (x.password===hashed||x.password===pass)); // backward compat
+      if(!u){setErr('Email o contraseña incorrectos.');setLoading(false);return;}
+      onLogin({...u,password:undefined});
+    }catch(e){setErr('Error al iniciar sesión.');}
+    setLoading(false);
+  };
+
+  return (
+    <div className="auth-screen">
+      <div className="auth-card">
+        <img src={LOGO_SRC} className="auth-logo" alt="Anton Company"/>
+        <div className="auth-title">Bienvenido</div>
+        <div className="auth-sub">Iniciá sesión para continuar</div>
+        {err&&<div className="auth-error">{err}</div>}
+        <div className="auth-field">
+          <label className="auth-label">Email</label>
+          <input className="auth-input" type="email" placeholder="tu@email.com"
+            value={email} onChange={e=>setEmail(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&handleLogin()}/>
+        </div>
+        <div className="auth-field">
+          <label className="auth-label">Contraseña</label>
+          <input className="auth-input" type="password" placeholder="••••••••"
+            value={pass} onChange={e=>setPass(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&handleLogin()}/>
+        </div>
+        <button className="auth-btn" onClick={handleLogin} disabled={loading}>
+          {loading?'Verificando…':'Ingresar'}
+        </button>
+        <hr className="auth-divider"/>
+        <div className="auth-link" onClick={onRegister}>
+          ¿No tenés cuenta? <span>Registrarte</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RegisterScreen({onBack,onRegistered}){
+  const [form,setForm]=React.useState({name:'',email:'',company:'',role:'Técnico',password:'',confirm:''});
+  const [err,setErr]=React.useState('');
+  const [loading,setLoading]=React.useState(false);
+  const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
+
+  const handleRegister=async()=>{
+    setErr('');
+    if(!form.name||!form.email||!form.password){setErr('Completá nombre, email y contraseña.');return;}
+    if(form.password!==form.confirm){setErr('Las contraseñas no coinciden.');return;}
+    if(form.password.length<6){setErr('La contraseña debe tener al menos 6 caracteres.');return;}
+    setLoading(true);
+    try{
+      const users=JSON.parse(localStorage.getItem('anton_users')||'[]');
+      if(users.find(x=>x.email.toLowerCase()===form.email.toLowerCase())){
+        setErr('Ese email ya está registrado.');setLoading(false);return;
+      }
+      const hashed=await hashPass(form.password);
+      const u={name:form.name,email:form.email,company:form.company,role:form.role,password:hashed};
+      users.push(u);
+      localStorage.setItem('anton_users',JSON.stringify(users));
+      onRegistered({...u,password:undefined});
+    }catch(e){setErr('Error al registrarse.');}
+    setLoading(false);
+  };
+
+  return (
+    <div className="auth-screen" style={{overflowY:'auto',justifyContent:'flex-start',paddingTop:32,paddingBottom:32}}>
+      <div className="auth-card">
+        <img src={LOGO_SRC} className="auth-logo" alt="Anton Company"/>
+        <div className="auth-title">Crear cuenta</div>
+        <div className="auth-sub">Registrate para acceder a la guía técnica</div>
+        {err&&<div className="auth-error">{err}</div>}
+        <div className="auth-field">
+          <label className="auth-label">Nombre completo</label>
+          <input className="auth-input" type="text" placeholder="Juan García"
+            value={form.name} onChange={set('name')}/>
+        </div>
+        <div className="auth-field">
+          <label className="auth-label">Email</label>
+          <input className="auth-input" type="email" placeholder="tu@email.com"
+            value={form.email} onChange={set('email')}/>
+        </div>
+        <div className="auth-field">
+          <label className="auth-label">Empresa (opcional)</label>
+          <input className="auth-input" type="text" placeholder="Empresa S.A."
+            value={form.company} onChange={set('company')}/>
+        </div>
+        <div className="auth-field">
+          <label className="auth-label">Perfil</label>
+          <select className="auth-select" value={form.role} onChange={set('role')}>
+            <option>Técnico</option>
+            <option>Técnico Senior</option>
+            <option>Ingeniero</option>
+            <option>Vendedor</option>
+            <option>Estudiante</option>
+          </select>
+        </div>
+        <div className="auth-field">
+          <label className="auth-label">Contraseña</label>
+          <input className="auth-input" type="password" placeholder="Mínimo 6 caracteres"
+            value={form.password} onChange={set('password')}/>
+        </div>
+        <div className="auth-field">
+          <label className="auth-label">Confirmar contraseña</label>
+          <input className="auth-input" type="password" placeholder="Repetí la contraseña"
+            value={form.confirm} onChange={set('confirm')}
+            onKeyDown={e=>e.key==='Enter'&&handleRegister()}/>
+        </div>
+        <button className="auth-btn" onClick={handleRegister} disabled={loading}>
+          {loading?'Registrando…':'Registrarme'}
+        </button>
+        <hr className="auth-divider"/>
+        <div className="auth-link" onClick={onBack}>
+          ¿Ya tenés cuenta? <span>Iniciar sesión</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ── Biblioteca Screen ─────────────────────────────────────────────────────────
+function BibliotecaScreen(){
+  const [search,setSearch]=React.useState('');
+
+  const DocBtn=({url,label,type})=>{
+    if(!url) return (
+      <span className="bib-doc-btn bib-doc-na">
+        <span>{label}</span>
+        <span className="bib-pill">PRONTO</span>
+      </span>
+    );
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer"
+        className={`bib-doc-btn bib-doc-${type}`}>
+        <span>{label}</span>
+        <span className="bib-pill">PDF</span>
+      </a>
+    );
+  };
+
+  const filtered=GAS_LIST.filter(g=>{
+    const q=search.toLowerCase();
+    return !q||g.id.toLowerCase().includes(q)||g.name.toLowerCase().includes(q)||
+      (g.antonName&&g.antonName.toLowerCase().includes(q));
+  });
+
+  return (
+    <div className="content">
+      <div className="bib-header">
+        <div className="bib-title">Biblioteca de Documentos</div>
+        <div className="bib-sub">Hojas de seguridad, traslado y catálogos Anton</div>
+      </div>
+      <div style={{padding:'0 12px 10px'}}>
+        <div className="search-wrap">
+          <span className="search-icon">🔍</span>
+          <input className="search-input" placeholder="Buscar gas…"
+            value={search} onChange={e=>setSearch(e.target.value)}/>
+        </div>
+      </div>
+      {filtered.map(gas=>{
+        const docs=DOCS_LIBRARY[gas.id]||{sds:null,traslado:null,catalogo:null};
+        const total=[docs.sds,docs.traslado,docs.catalogo].filter(Boolean).length;
+        return (
+          <div className="bib-card" key={gas.id}>
+            <div className="bib-gas-row">
+              <div className={`gas-badge badge-${gas.category}`} style={{padding:'4px 10px',fontSize:11}}>
+                {gas.id}
+              </div>
+              <div>
+                <div className="bib-gas-name">{gas.antonName||gas.name}</div>
+                {gas.antonName&&<div className="bib-gas-sub">{gas.name}</div>}
+              </div>
+              {total>0&&<span style={{marginLeft:'auto',fontSize:11,color:'#1a7a3a',fontWeight:700,background:'#e8f5ed',borderRadius:6,padding:'2px 8px'}}>{total} doc{total>1?'s':''}</span>}
+            </div>
+            <div className="bib-docs">
+              <DocBtn url={docs.sds}      label="Hoja de Seguridad" type="sds"/>
+              <DocBtn url={docs.traslado} label="Traslado"          type="traslado"/>
+              <DocBtn url={docs.catalogo} label="Catálogo Anton"    type="catalogo"/>
+            </div>
+          </div>
+        );
+      })}
+      <div style={{height:16}}/>
+    </div>
+  );
+}
+
+// ── Productos Screen ──────────────────────────────────────────────────────────
+const PRODUCTOS=[
+  {cat:'Refrigerantes HFC',items:[
+    {name:'AN-22 Plus',code:'R-417B',img:'producto-AN-22-Plus.png',desc:'Blend HFC. Marca propia Anton Company. Drop-in para R-22 en sistemas existentes.',tags:['Drop-in R22','HFC']},
+    {name:'YH12',code:'R-417C',img:'producto-YH12.png',desc:'Blend HFC. Marca propia Anton Company. Alternativa de alta eficiencia para R-22.',tags:['Drop-in R22','HFC']},
+    {name:'R134a',code:'R-134a',img:'producto-R134a.png',desc:'HFC puro. Estándar para refrigeración doméstica, automotriz y media temperatura.',tags:['HFC puro','GWP 1430']},
+    {name:'R32',code:'R-32',img:'producto-R32.png',desc:'HFC puro. Bajo GWP, alta eficiencia. Presente en equipos split modernos.',tags:['HFC puro','GWP 675']},
+    {name:'R410A',code:'R-410A',img:'producto-R410A.png',desc:'Blend HFC. Estándar internacional para equipos de AA split residencial y comercial.',tags:['Blend HFC','GWP 2088']},
+    {name:'R404A',code:'R-404A',img:'producto-R404A.png',desc:'Blend HFC para refrigeración comercial y cámaras de baja temperatura.',tags:['Blend HFC','GWP 3922']},
+    {name:'R407A',code:'R-407A',img:'producto-R407A.png',desc:'Blend HFC. Alternativa de menor GWP al R404A para cámaras frigoríficas.',tags:['Blend HFC','GWP 2107']},
+    {name:'R407C',code:'R-407C',img:'producto-R407C.png',desc:'Blend HFC. Alternativa al R-22 para sistemas de AA comercial e industrial.',tags:['Blend HFC','GWP 1774']},
+    {name:'R407F',code:'R-407F',img:'producto-R407F.png',desc:'Blend HFC de bajo GWP. Alternativa al R404A con mayor eficiencia.',tags:['Blend HFC','GWP 1825']},
+  ]},
+  {cat:'Refrigerantes HC',items:[
+    {name:'R290',code:'R-290',img:'producto-R290.png',desc:'Propano puro. Refrigerante natural de GWP=3. Para equipos herméticamente seguros.',tags:['Natural','GWP 3','Inflamable A3']},
+    {name:'R600a',code:'R-600a',img:'producto-R600a.png',desc:'Isobutano puro. Refrigeración doméstica (heladeras). GWP=3, eficiencia muy alta.',tags:['Natural','GWP 3','Inflamable A3']},
+  ]},
+  {cat:'Refrigerantes HFO — Solstice®',items:[
+    {name:'Solstice® Line',code:'HFO Series',img:'producto-solstice.png',desc:'Línea de refrigerantes HFO y blends de ultra-bajo GWP de Honeywell. Incluye R1234yf, R1234ze, R454B, R454C, R455A y más. Distribuidos exclusivamente por Anton Company.',tags:['HFO','Ultra-bajo GWP','Solstice®']},
+  ]},
+  {cat:'Químicos & Mantenimiento',items:[
+    {name:'Anton Flush (EZ Flush)',code:'Agente de limpieza',img:'producto-Anton-Flush.png',desc:'Agente de limpieza no inflamable para sistemas de refrigeración. Elimina aceites minerales, residuos de contaminación y humedad de tuberías y componentes. Ideal para conversiones de gas.',tags:['Limpieza','No inflamable','Conversión de gas']},
+    {name:'POE 32',code:'Aceite sintético',img:'producto-POE-32.png',desc:'Aceite polioléster viscosidad ISO 32 para compresores herméticos con refrigerantes HFC/HFO.',tags:['Lubricante','HFC','HFO']},
+    {name:'POE 68',code:'Aceite sintético',img:'producto-POE-68.png',desc:'Aceite polioléster viscosidad ISO 68 para compresores de tornillo y semi-herméticos.',tags:['Lubricante','Tornillo']},
+    {name:'Sellafugas',code:'Concentrado',img:'producto-Sellafugas-concentrado.png',desc:'Sellador de fugas microscópicas en juntas y válvulas del circuito de refrigeración.',tags:['Mantenimiento']},
+    {name:'Detector UV',code:'Aditivo fluorescente',img:'producto-Detector-de-fugas-UV.png',desc:'Colorante fluorescente UV para detección de fugas en circuitos de refrigeración.',tags:['Detección','UV']},
+    {name:'Burbujas Detect',code:'Espray detector',img:'producto-Burbujas-Detect.png',desc:'Solución espumante para detección visual de fugas en conexiones y válvulas.',tags:['Detección']},
+    {name:'Acid Clean Power',code:'Limpiador ácido',img:'producto-Acid-Clean-Power.png',desc:'Limpiador ácido para evaporadores y condensadores. Elimina sarro y depósitos minerales.',tags:['Limpieza','Evaporador']},
+    {name:'Filtro Fresh',code:'Purificador',img:'producto-Filtro-Fresh.png',desc:'Tratamiento para sistemas con contaminación leve. Extiende la vida útil del gas y del compresor.',tags:['Mantenimiento']},
+  ]},
+];
+
+const IMG_BASE='https://antoncompany.com.ar/wp-content/uploads/2026/06/';
+
+function ProductosScreen(){
+  const [search,setSearch]=React.useState('');
+  const [catFilter,setCatFilter]=React.useState('todos');
+  const cats=['todos',...PRODUCTOS.map(c=>c.cat)];
+  const q=search.toLowerCase();
+
+  const filtered=PRODUCTOS.map(cat=>({
+    ...cat,
+    items:cat.items.filter(p=>
+      (catFilter==='todos'||catFilter===cat.cat)&&
+      (!q||p.name.toLowerCase().includes(q)||p.code.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)||(p.tags||[]).some(t=>t.toLowerCase().includes(q)))
+    )
+  })).filter(c=>c.items.length>0);
+
+  return (
+    <div className="content" style={{paddingBottom:80}}>
+      <div className="bib-header">
+        <div className="bib-title">Catálogo Anton</div>
+        <div className="bib-sub">Gases refrigerantes y productos de mantenimiento</div>
+      </div>
+
+      <div style={{padding:'0 16px 12px'}}>
+        <input className="bib-search" placeholder="🔍  Buscar producto, gas, aplicación…"
+          value={search} onChange={e=>setSearch(e.target.value)}/>
+        <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,marginTop:8}}>
+          {cats.map(c=>(
+            <button key={c} onClick={()=>setCatFilter(c)}
+              style={{flexShrink:0,padding:'4px 12px',borderRadius:20,border:'1.5px solid var(--border)',
+                background:catFilter===c?'var(--anton)':'var(--card)',
+                color:catFilter===c?'#fff':'var(--sub)',
+                fontSize:11,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>
+              {c==='todos'?'Todos':c.split(' ')[c.split(' ').length-1]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filtered.map(cat=>(
+        <div key={cat.cat} style={{marginBottom:24}}>
+          <div style={{padding:'4px 16px 8px',fontSize:11,fontWeight:700,
+            color:'var(--anton)',textTransform:'uppercase',letterSpacing:'.06em'}}>
+            {cat.cat}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:10,padding:'0 16px'}}>
+            {cat.items.map(p=>(
+              <div key={p.name} style={{background:'var(--card)',borderRadius:'var(--radius)',
+                border:'1px solid var(--border)',overflow:'hidden',
+                boxShadow:'var(--shadow-sm)',display:'flex',flexDirection:'column'}}>
+                <div className="prod-img-bg" style={{background:'#f8f9fb',display:'flex',alignItems:'center',justifyContent:'center',
+                  height:130,padding:12,position:'relative'}}>
+                  <img src={IMG_BASE+p.img} alt={p.name}
+                    style={{maxHeight:110,maxWidth:'100%',objectFit:'contain'}}
+                    onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex';}}/>
+                  <div style={{display:'none',alignItems:'center',justifyContent:'center',
+                    fontSize:32,color:'#ccc',height:'100%'}}>📦</div>
+                </div>
+                <div style={{padding:'10px 12px',flex:1,display:'flex',flexDirection:'column',gap:4}}>
+                  <div style={{fontWeight:700,fontSize:13,color:'var(--text)',lineHeight:1.2}}>{p.name}</div>
+                  <div style={{fontSize:11,color:'var(--anton)',fontWeight:600}}>{p.code}</div>
+                  <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.4,marginTop:2,flex:1}}>{p.desc}</div>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:3,marginTop:6}}>
+                    {(p.tags||[]).map(t=>(
+                      <span key={t} style={{fontSize:9,fontWeight:700,padding:'2px 6px',
+                        borderRadius:10,background:'var(--anton-l)',color:'var(--anton)',
+                        letterSpacing:'.03em'}}>{t}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {filtered.length===0&&(
+        <div style={{textAlign:'center',padding:'48px 24px',color:'var(--sub)'}}>
+          Sin resultados para "{search}"
+        </div>
+      )}
+
+      <div style={{margin:'16px',padding:16,background:'var(--card)',borderRadius:'var(--radius)',
+        border:'1px solid var(--border)',textAlign:'center'}}>
+        <div style={{fontSize:12,color:'var(--sub)',marginBottom:8}}>Información comercial y técnica</div>
+        <a href="https://antoncompany.com.ar" target="_blank" rel="noopener noreferrer"
+          style={{display:'inline-block',padding:'8px 20px',background:'var(--anton)',
+          color:'#fff',borderRadius:8,fontSize:12,fontWeight:700,textDecoration:'none'}}>
+          🌐 antoncompany.com.ar
+        </a>
+      </div>
+    </div>
+  );
+}
+
+
+// ── MollierScreen — Diagrama P-h ───────────────────────────────────────────────
+function MollierScreen(){
+  const GAS_IDS=['R410A','R134a','R32','R417C','R417B','R404A','R407A','R407C','R407F',
+                 'R449A','R454B','R454C','R455A','R513A','R290','R600a','R600',
+                 'R1234yf','R1234ze','R1233zd','R22'];
+  const [gasId,setGasId]=React.useState('R410A');
+  const [tevap,setTevap]=React.useState(-10);
+  const [tcond,setTcond]=React.useState(40);
+  const [sh,setSh]=React.useState(5);
+  const [sc,setSc]=React.useState(5);
+  const [showInfo,setShowInfo]=React.useState(false);
+
+  const gasObj=GASES[gasId]||GASES['R410A'];
+  const md=MOLLIER_H[gasId]||MOLLIER_H['R410A'];
+  const ptArr=gasObj.ptData||[];
+
+  // Saturation pressures from ptData (array of [t, p] pairs)
+  const getPsat=(t)=>{
+    if(ptArr.length===0) return 1;
+    if(t<=ptArr[0][0]) return ptArr[0][1];
+    if(t>=ptArr[ptArr.length-1][0]) return ptArr[ptArr.length-1][1];
+    for(let i=0;i<ptArr.length-1;i++){
+      if(t>=ptArr[i][0]&&t<=ptArr[i+1][0]){
+        const f=(t-ptArr[i][0])/(ptArr[i+1][0]-ptArr[i][0]);
+        return ptArr[i][1]+f*(ptArr[i+1][1]-ptArr[i][1]);
+      }
+    }
+    return ptArr[ptArr.length-1][1];
+  };
+
+  const pEvap=Math.max(0.1,getPsat(tevap));
+  const pCond=Math.max(0.1,getPsat(tcond));
+
+  // State points
+  const T1=tevap+sh;
+  const T3=tcond-sc;
+  const h1=md.hV0+md.Cv*T1;
+  const h3=md.hL0+md.Cl*T3;
+  const h4=h3;
+  const rc=pCond/pEvap;
+  const T2=(T1+273.15)*Math.pow(rc,0.13)-273.15;
+  const h2=md.hV0+md.Cv*T2;
+  const qEvap=h1-h4;
+  const wComp=h2-h1;
+  const qCond=h2-h3;
+  const COP_c=wComp>0?qEvap/wComp:0;
+  const COP_h=wComp>0?qCond/wComp:0;
+
+  // Chart layout
+  const CL=58,CR=368,CT=28,CB=316;
+  const W=400,H=370;
+
+  // Axis bounds
+  const hVals=[h1,h2,h3,h4];
+  const hMin=Math.max(100,Math.min(...hVals)-60);
+  const hMax=Math.min(md.hV0+200,Math.max(...hVals)+60);
+  const pMin=Math.max(0.05,pEvap*0.5);
+  const pMax=pCond*2.5;
+
+  const hRange=hMax-hMin||1;
+  const pLogRange=(Math.log10(pMax)-Math.log10(pMin))||1;
+  const tX=h=>CL+(h-hMin)/hRange*(CR-CL);
+  const tY=p=>CB-(Math.log10(Math.max(0.001,p))-Math.log10(pMin))/pLogRange*(CB-CT);
+
+  // Build saturation dome from ptData
+  const domePoints=[];
+  for(let i=0;i<ptArr.length;i++){
+    const t=ptArr[i][0],p=ptArr[i][1];
+    if(t<tevap-30||t>md.Tc) continue;
+    const hL=md.hL0+md.Cl*t;
+    const hV=md.hV0+md.Cv*t;
+    if(isFinite(hL)&&isFinite(hV)&&p>0){
+      domePoints.push({t,p,hL,hV});
+    }
+  }
+  // Add critical point
+  domePoints.push({t:md.Tc,p:md.Pc,hL:md.hc,hV:md.hc});
+  domePoints.sort((a,b)=>a.t-b.t);
+
+  const leftDome=domePoints.map(d=>`${tX(d.hL).toFixed(1)},${tY(d.p).toFixed(1)}`).join(' ');
+  const rightDome=[...domePoints].reverse().map(d=>`${tX(d.hV).toFixed(1)},${tY(d.p).toFixed(1)}`).join(' ');
+  const domePoly=[leftDome,rightDome].filter(Boolean).join(' ');
+
+  const leftPath=domePoints.map((d,i)=>`${i===0?'M':'L'}${tX(d.hL).toFixed(1)},${tY(d.p).toFixed(1)}`).join(' ');
+  const rightPath=[...domePoints].reverse().map((d,i)=>`${i===0?'M':'L'}${tX(d.hV).toFixed(1)},${tY(d.p).toFixed(1)}`).join(' ');
+
+  // Cycle path coords
+  const x1=tX(h1),y1=tY(pEvap);
+  const x2=tX(h2),y2=tY(pCond);
+  const x3=tX(h3),y3=tY(pCond);
+  const x4=tX(h4),y4=tY(pEvap);
+
+  // Y-axis pressure labels
+  const pLabels=[0.1,0.2,0.5,1,2,5,10,20,50,100].filter(p=>p>=pMin*0.8&&p<=pMax*1.2);
+
+  // X-axis enthalpy labels
+  const hStep=50;
+  const hStart=Math.ceil(hMin/hStep)*hStep;
+  const hLabels=[];
+  for(let h=hStart;h<=hMax;h+=hStep) hLabels.push(h);
+
+  const c={blue:'#1B4F8A',red:'#e53935',green:'#43a047',orange:'#fb8c00',cyan:'#00bcd4',gray:'#9e9e9e'};
+
+  return (
+    <div style={{padding:'0 0 80px'}}>
+      {/* Gas selector */}
+      <div style={{padding:'12px 12px 6px',overflowX:'auto',display:'flex',gap:6,scrollbarWidth:'none'}}>
+        {GAS_IDS.map(id=>(
+          <button key={id} onClick={()=>setGasId(id)}
+            style={{flexShrink:0,padding:'5px 10px',borderRadius:20,border:'none',
+              background:id===gasId?c.blue:'var(--card)',
+              color:id===gasId?'#fff':'var(--text)',
+              fontSize:11,fontWeight:id===gasId?700:400,cursor:'pointer',
+              boxShadow:id===gasId?'0 2px 8px rgba(27,79,138,0.3)':'none'}}>
+            {id}
+          </button>
+        ))}
+      </div>
+
+      {/* Inputs */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,padding:'8px 12px'}}>
+        {[['T Evap','tevap',tevap,setTevap,-40,20],
+          ['T Cond','tcond',tcond,setTcond,25,70],
+          ['SH °C','sh',sh,setSh,0,30],
+          ['SC °C','sc',sc,setSc,0,20]].map(([lbl,_k,val,setter,mn,mx])=>(
+          <div key={lbl} style={{background:'var(--card)',borderRadius:10,padding:'8px 10px',border:'1px solid var(--border)'}}>
+            <div style={{fontSize:10,color:'var(--sub)',marginBottom:2}}>{lbl}</div>
+            <div style={{display:'flex',alignItems:'center',gap:6}}>
+              <input type="range" min={mn} max={mx} value={val}
+                onChange={e=>setter(Number(e.target.value))}
+                style={{flex:1,accentColor:c.blue}}/>
+              <span style={{fontSize:12,fontWeight:700,color:c.blue,minWidth:30,textAlign:'right'}}>{val}°</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* SVG Diagram */}
+      <div style={{padding:'0 8px',overflowX:'auto'}}>
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{display:'block',maxWidth:460,margin:'0 auto'}}>
+          {/* Background */}
+          <rect x={CL} y={CT} width={CR-CL} height={CB-CT} fill="var(--bg)" opacity={0.5}/>
+
+          {/* Grid lines */}
+          {pLabels.map(p=>{
+            const y=tY(p);
+            if(y<CT||y>CB) return null;
+            return <line key={p} x1={CL} y1={y} x2={CR} y2={y} stroke="var(--border)" strokeWidth={0.5}/>;
+          })}
+          {hLabels.map(h=>{
+            const x=tX(h);
+            if(x<CL||x>CR) return null;
+            return <line key={h} x1={x} y1={CT} x2={x} y2={CB} stroke="var(--border)" strokeWidth={0.5}/>;
+          })}
+
+          {/* Saturation dome fill */}
+          {domePoly&&<polygon points={domePoly} fill="rgba(27,79,138,0.08)" stroke="none"/>}
+
+          {/* Dome lines */}
+          {leftPath&&<path d={leftPath} fill="none" stroke={c.orange} strokeWidth={2} strokeLinejoin="round"/>}
+          {rightPath&&<path d={rightPath} fill="none" stroke={c.blue} strokeWidth={2} strokeLinejoin="round"/>}
+
+          {/* Critical point */}
+          <circle cx={tX(md.hc)} cy={tY(md.Pc)} r={4} fill={c.blue} stroke="#fff" strokeWidth={1.5}/>
+
+          {/* Cycle — evaporation (h4→h1 at pEvap) */}
+          <line x1={x4} y1={y4} x2={x1} y2={y1} stroke={c.cyan} strokeWidth={2.5}/>
+          {/* Cycle — compression (h1→h2) */}
+          <path d={`M${x1},${y1} Q${x1+(x2-x1)*0.3},${y1-(y2-y1)*0.6} ${x2},${y2}`}
+            fill="none" stroke={c.red} strokeWidth={2.5}/>
+          {/* Cycle — condensation (h2→h3 at pCond) */}
+          <line x1={x2} y1={y2} x2={x3} y2={y3} stroke={c.orange} strokeWidth={2.5}/>
+          {/* Cycle — expansion (h3→h4 isenthalpic) */}
+          <line x1={x3} y1={y3} x2={x4} y2={y4} stroke={c.cyan} strokeWidth={2} strokeDasharray="4 3"/>
+
+          {/* State point circles */}
+          {[['1',x1,y1,c.cyan,'1 — Aspiración'],[' 2',x2,y2,c.red,'2 — Descarga'],
+            ['3',x3,y3,c.orange,'3 — Líquido sat.'],['4',x4,y4,c.cyan,'4 — Expansión']].map(([lbl,cx,cy,col])=>(
+            <g key={lbl}>
+              <circle cx={cx} cy={cy} r={5} fill={col} stroke="#fff" strokeWidth={1.5}/>
+              <text x={cx+7} y={cy-5} fontSize={9} fill={col} fontWeight="bold">{lbl}</text>
+            </g>
+          ))}
+
+          {/* Pressure lines */}
+          <line x1={CL-2} y1={y1} x2={CL+4} y2={y1} stroke={c.cyan} strokeWidth={1.5}/>
+          <line x1={CL-2} y1={y2} x2={CL+4} y2={y2} stroke={c.red} strokeWidth={1.5}/>
+
+          {/* Y axis */}
+          <line x1={CL} y1={CT} x2={CL} y2={CB} stroke="var(--text)" strokeWidth={1}/>
+          {pLabels.map(p=>{
+            const y=tY(p);
+            if(y<CT-2||y>CB+2) return null;
+            return (
+              <g key={p}>
+                <line x1={CL-3} y1={y} x2={CL} y2={y} stroke="var(--text)" strokeWidth={1}/>
+                <text x={CL-5} y={y+3} fontSize={8} fill="var(--sub)" textAnchor="end">{p}</text>
+              </g>
+            );
+          })}
+
+          {/* X axis */}
+          <line x1={CL} y1={CB} x2={CR} y2={CB} stroke="var(--text)" strokeWidth={1}/>
+          {hLabels.map(h=>{
+            const x=tX(h);
+            if(x<CL||x>CR) return null;
+            return (
+              <g key={h}>
+                <line x1={x} y1={CB} x2={x} y2={CB+3} stroke="var(--text)" strokeWidth={1}/>
+                <text x={x} y={CB+11} fontSize={8} fill="var(--sub)" textAnchor="middle">{h}</text>
+              </g>
+            );
+          })}
+
+          {/* Axis labels */}
+          <text x={CL-38} y={(CT+CB)/2} fontSize={9} fill="var(--sub)" textAnchor="middle"
+            transform={`rotate(-90,${CL-38},${(CT+CB)/2})`}>P (bar)</text>
+          <text x={(CL+CR)/2} y={H-4} fontSize={9} fill="var(--sub)" textAnchor="middle">h (kJ/kg)</text>
+
+          {/* Zone labels */}
+          <text x={CL+18} y={CT+16} fontSize={8} fill={c.orange} opacity={0.7}>Sub-enfriado</text>
+          <text x={(CL+CR)/2-16} y={CT+14} fontSize={8} fill={c.blue} opacity={0.7} textAnchor="middle">Bifásico</text>
+          <text x={CR-8} y={CT+16} fontSize={8} fill={c.gray} opacity={0.7} textAnchor="end">Vapor</text>
+
+          {/* Gas name */}
+          <text x={CR-4} y={CB-4} fontSize={11} fill={c.blue} fontWeight="bold" textAnchor="end" opacity={0.5}>{gasId}</text>
+        </svg>
+      </div>
+
+      {/* Results panel */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,padding:'8px 12px'}}>
+        {[
+          ['P Evap',pEvap.toFixed(2),'bar',c.cyan],
+          ['P Cond',pCond.toFixed(2),'bar',c.red],
+          ['RC (r)',rc.toFixed(2),':1',c.orange],
+          ['COP Frío',COP_c.toFixed(2),'',c.blue],
+          ['COP Calor',COP_h.toFixed(2),'',c.green],
+          ['W Compr',(h2-h1).toFixed(1),'kJ/kg',c.red],
+          ['Q Evap',(h1-h4).toFixed(1),'kJ/kg',c.cyan],
+          ['Q Cond',(h2-h3).toFixed(1),'kJ/kg',c.orange],
+        ].map(([lbl,val,u,col])=>(
+          <div key={lbl} style={{background:'var(--card)',borderRadius:10,padding:'8px 10px',
+            border:`1px solid var(--border)`,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span style={{fontSize:10,color:'var(--sub)'}}>{lbl}</span>
+            <span style={{fontSize:13,fontWeight:700,color:col}}>{val}<span style={{fontSize:9,color:'var(--sub)',marginLeft:2}}>{u}</span></span>
+          </div>
+        ))}
+      </div>
+
+      {/* Enthalpy state points */}
+      <div style={{margin:'4px 12px 8px',background:'var(--card)',borderRadius:12,padding:'10px 12px',border:'1px solid var(--border)'}}>
+        <div style={{fontSize:10,color:'var(--sub)',marginBottom:6,fontWeight:600,letterSpacing:1}}>ENTALPÍAS (kJ/kg)</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:4}}>
+          {[['h₁ Aspiración',h1,c.cyan],['h₂ Descarga',h2,c.red],
+            ['h₃ Líq. sat.',h3,c.orange],['h₄ Post-exp.',h4,c.cyan]].map(([lbl,val,col])=>(
+            <div key={lbl} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'3px 0',borderBottom:'1px solid var(--border)'}}>
+              <span style={{fontSize:9,color:'var(--sub)'}}>{lbl}</span>
+              <span style={{fontSize:12,fontWeight:700,color:col}}>{val.toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Info toggle */}
+      <div style={{margin:'0 12px 8px'}}>
+        <button onClick={()=>setShowInfo(v=>!v)}
+          style={{width:'100%',background:'var(--card)',border:'1px solid var(--border)',
+            borderRadius:10,padding:'9px 12px',fontSize:11,color:'var(--text)',cursor:'pointer',
+            display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span>📖 ¿Cómo leer un diagrama P-h (Mollier)?</span>
+          <span style={{color:c.blue,fontWeight:700}}>{showInfo?'▲':'▼'}</span>
+        </button>
+        {showInfo&&(
+          <div style={{background:'var(--card)',border:'1px solid var(--border)',borderTop:'none',
+            borderRadius:'0 0 10px 10px',padding:'12px',fontSize:11,color:'var(--text)',lineHeight:1.7}}>
+            <div style={{marginBottom:8}}>
+              El <strong>diagrama de Mollier</strong> (o diagrama P-h) es la herramienta fundamental del técnico
+              de refrigeración. Representa el ciclo de refrigeración en un plano donde:
+            </div>
+            <div style={{marginBottom:8}}>
+              <span style={{color:c.gray}}>→</span> <strong>Eje X:</strong> Entalpía específica <em>h</em> (kJ/kg) — energía contenida en el refrigerante<br/>
+              <span style={{color:c.gray}}>→</span> <strong>Eje Y:</strong> Presión <em>P</em> (bar) en escala logarítmica
+            </div>
+            <div style={{fontWeight:600,color:c.blue,marginBottom:4,marginTop:8}}>La cúpula de saturación:</div>
+            <div style={{marginBottom:8}}>
+              Divide el diagrama en 3 zonas: <span style={{color:c.orange}}>líquido sub-enfriado</span> (izquierda),
+              <span style={{color:c.blue}}> zona bifásica</span> (dentro de la cúpula) y
+              <span style={{color:c.gray}}> vapor sobrecalentado</span> (derecha).
+              El punto más alto es el <strong>punto crítico</strong>.
+            </div>
+            <div style={{fontWeight:600,color:c.blue,marginBottom:4,marginTop:8}}>El ciclo de refrigeración:</div>
+            {[
+              ['1→2',c.red,'Compresión','El compresor eleva la presión y temperatura del vapor (proceso adiabático)'],
+              ['2→3',c.orange,'Condensación','El condensador extrae calor al ambiente. El refrigerante pasa a líquido (P constante)'],
+              ['3→4',c.cyan,'Expansión','La válvula de expansión reduce la presión (h constante — línea vertical)'],
+              ['4→1',c.cyan,'Evaporación','El evaporador absorbe calor del espacio a enfriar (P constante)'],
+            ].map(([pts,col,nom,desc])=>(
+              <div key={pts} style={{marginBottom:6,paddingLeft:8,borderLeft:`2px solid ${col}`}}>
+                <span style={{color:col,fontWeight:700}}>{pts} {nom}: </span>{desc}
+              </div>
+            ))}
+            <div style={{fontWeight:600,color:c.blue,marginBottom:4,marginTop:10}}>Fórmulas clave:</div>
+            <div style={{fontFamily:'monospace',fontSize:10,background:'rgba(27,79,138,0.08)',
+              borderRadius:8,padding:'8px 10px',lineHeight:1.9}}>
+              <div>COP Frío = (h₁ - h₄) / (h₂ - h₁)</div>
+              <div>COP Calor = (h₂ - h₃) / (h₂ - h₁)</div>
+              <div>W Compresor = h₂ - h₁  [kJ/kg]</div>
+              <div>Efecto frigorífico = h₁ - h₄  [kJ/kg]</div>
+              <div>Calor condensación = h₂ - h₃  [kJ/kg]</div>
+              <div>RC (razón de compresión) = P_cond / P_evap</div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main App (requires auth) ───────────────────────────────────────────────────
+function MainApp({user,onLogout}){
+  const [tab,setTab]=React.useState('gases');
+  const [selectedGas,setSelectedGas]=React.useState(null);
+  const [theme,setTheme]=React.useState(()=>getTheme());
+  const [menuOpen,setMenuOpen]=React.useState(false);
+
+  const doToggleTheme=()=>{
+    const next=theme==='light'?'dark':'light';
+    setTheme(next);
+    localStorage.setItem('anton_theme',next);
+    document.documentElement.setAttribute('data-theme',next);
+  };
+
+  const initials=(user?.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  if(selectedGas) return <GasDetail gas={selectedGas} onBack={()=>setSelectedGas(null)}/>;
+
+  const navTabs=[
+    ['gases','🧪','Gases'],['pt','📊','P-T'],['shsc','🌡️','SH/SC'],
+    ['ciclo','🔧','Ciclo'],['mollier','📈','P-h'],['biblioteca','📁','Docs'],['carga','⚖️','Carga'],
+    ['productos','🛒','Productos'],['comparar','↔️','Comparar'],['carnot','🔄','Carnot'],
+    ['app','🔍','Aplicación'],['teoria','📚','Teoría'],
+  ];
+
+  return (
+    <div className="app" onClick={()=>menuOpen&&setMenuOpen(false)}>
+      <div className="header">
+        <img src={LOGO_SRC}
+          style={{height:30,width:'auto',flexShrink:0,filter:'brightness(0) invert(1)',objectFit:'contain'}}
+          alt="Anton Company"/>
+        <div style={{width:'1px',height:26,background:'rgba(255,255,255,0.2)',margin:'0 8px',flexShrink:0}}/>
+        <div style={{flex:1}}>
+          <div className="header-title" style={{fontSize:12}}>Guía Técnica de Gases</div>
+          <div className="header-sub">{GAS_LIST.length} GASES</div>
+        </div>
+        <button className="theme-btn" onClick={e=>{e.stopPropagation();doToggleTheme();}} title="Tema">
+          {theme==='dark'?'☀️':'🌙'}
+        </button>
+        <div style={{position:'relative',marginLeft:6}} onClick={e=>e.stopPropagation()}>
+          <div className="user-avatar" onClick={()=>setMenuOpen(o=>!o)}>
+            {initials}
+          </div>
+          {menuOpen&&(
+            <div className="user-menu">
+              <div className="user-menu-header">
+                <div className="user-menu-name">{user?.name||'Usuario'}</div>
+                <div className="user-menu-role">{user?.role||''}{user?.company?' · '+user.company:''}</div>
+              </div>
+              <button className="user-menu-item danger" onClick={()=>{setMenuOpen(false);onLogout();}}>
+                🚪 Cerrar sesión
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+      <ErrorBoundary>
+        {tab==='gases'     &&<GasListScreen onSelect={setSelectedGas}/>}
+        {tab==='comparar'  &&<ComparisonScreen/>}
+        {tab==='pt'        &&<SimulatorScreen/>}
+        {tab==='shsc'      &&<SuperheatScreen/>}
+        {tab==='ciclo'     &&<CicloScreen/>}
+        {tab==='mollier'   &&<MollierScreen/>}
+        {tab==='carnot'    &&<CarnotScreen/>}
+        {tab==='app'       &&<AplicacionScreen/>}
+        {tab==='teoria'    &&<TeoriaScreen/>}
+        {tab==='biblioteca'&&<BibliotecaScreen/>}
+        {tab==='carga'     &&<CargaScreen/>}
+        {tab==='productos' &&<ProductosScreen/>}
+      </ErrorBoundary>
+      <nav className="nav">
+        {navTabs.map(([id,ico,lbl])=>(
+          <button key={id} className={`nav-item ${tab===id?'active':''}`} onClick={()=>setTab(id)}>
+            <span className="nav-icon">{ico}</span>{lbl}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
+
+// ── App Root with Auth ─────────────────────────────────────────────────────────
+function App(){
+  const [screen,setScreen]=React.useState('splash');
+  const [user,setUser]=React.useState(null);
+
+  React.useEffect(()=>{
+    try{
+      const s=localStorage.getItem('anton_session');
+      if(s){const u=JSON.parse(s);setUser(u);setScreen('app');}
+      else{setTimeout(()=>setScreen('login'),2600);}
+    }catch(e){setTimeout(()=>setScreen('login'),2600);}
+  },[]);
+
+  const handleLogin=(u)=>{
+    try{localStorage.setItem('anton_session',JSON.stringify(u));}catch(e){}
+    setUser(u);setScreen('app');
+  };
+  const handleLogout=()=>{
+    try{localStorage.removeItem('anton_session');}catch(e){}
+    setUser(null);setScreen('login');
+  };
+
+  if(screen==='splash') return <SplashScreen/>;
+  if(screen==='login') return <LoginScreen onLogin={handleLogin} onRegister={()=>setScreen('register')}/>;
+  if(screen==='register') return <RegisterScreen onBack={()=>setScreen('login')} onRegistered={handleLogin}/>;
+  return <MainApp user={user} onLogout={handleLogout}/>;
+}
+
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[Anton] SW registrado:', reg.scope))
+          .catch(err => console.warn('[Anton] SW error:', err));
+      });
+    }
+  </script>
+</body>
+</html>

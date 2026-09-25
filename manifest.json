@@ -1,0 +1,32 @@
+{
+  "name": "Anton Refrigerantes",
+  "short_name": "Anton Ref",
+  "description": "App técnica para refrigeración y aire acondicionado — Anton Company",
+  "start_url": "./Anton_Refrigerantes.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1B4F8A",
+  "theme_color": "#1B4F8A",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
+  "screenshots": [],
+  "scope": "./",
+  "id": "./Anton_Refrigerantes.html"
+}
