@@ -1,6 +1,6 @@
 // Anton Refrigerantes — Service Worker
 // Versión del caché: incrementar para forzar actualización
-const CACHE_NAME = 'anton-ref-v1';
+const CACHE_NAME = 'anton-ref-v2';
 
 // Archivos a cachear para uso offline
 const ASSETS = [
@@ -8,6 +8,7 @@ const ASSETS = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
   // CDN resources (React, Babel)
   'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',
