@@ -43,15 +43,34 @@
 
   /* ── Tab nav ── */
   .nav{display:flex;background:#fff;border-top:1px solid var(--border);
-    position:sticky;bottom:0;z-index:100;overflow-x:auto;scrollbar-width:none;}
-  .nav::-webkit-scrollbar{display:none;}
-  .nav-item{flex:0 0 auto;min-width:56px;padding:8px 4px 6px;display:flex;flex-direction:column;
-    align-items:center;gap:2px;cursor:pointer;border:none;background:none;color:var(--sub);
+    position:sticky;bottom:0;z-index:100;}
+  html[data-theme='dark'] .nav{background:var(--card);}
+  .nav-item{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;
+    align-items:center;gap:3px;cursor:pointer;border:none;background:none;color:var(--sub);
     font-size:10px;font-weight:500;transition:color .18s;position:relative;}
   .nav-item.active{color:var(--anton);}
-  .nav-item.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2.5px;
+  .nav-item.active::after{content:'';position:absolute;top:0;left:15%;right:15%;height:2.5px;
     background:var(--anton);border-radius:0 0 3px 3px;}
-  .nav-icon{font-size:20px;line-height:1;}
+  .nav-icon{font-size:22px;line-height:1;}
+  /* ── More drawer ── */
+  .more-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;
+    display:flex;align-items:flex-end;}
+  .more-sheet{background:#fff;width:100%;border-radius:20px 20px 0 0;
+    padding:14px 14px 36px;box-shadow:0 -4px 24px rgba(0,0,0,0.15);}
+  html[data-theme='dark'] .more-sheet{background:var(--card);}
+  .more-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px;}
+  .more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .more-tab-btn{display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:12px 6px 10px;background:var(--bg);border:1px solid var(--border);
+    border-radius:14px;cursor:pointer;font-size:10px;color:var(--text);font-weight:500;
+    transition:background .15s,color .15s;}
+  .more-tab-btn.active{background:var(--anton);color:#fff;border-color:var(--anton);}
+  .more-tab-icon{font-size:22px;line-height:1;}
+  /* ── Password field with toggle ── */
+  .pw-wrap{position:relative;}
+  .pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    background:none;border:none;cursor:pointer;font-size:16px;color:var(--sub);
+    padding:4px 6px;line-height:1;}
 
   /* ── Content area ── */
   .content{flex:1;overflow-y:auto;padding-bottom:72px;}
@@ -458,6 +477,7 @@ const DOCS_LIBRARY = {
   R455A:    {sds:null, traslado:null, catalogo:null},
   R513A:    {sds:null, traslado:null, catalogo:null},
   R290:     {sds:null, traslado:null, catalogo:null},
+  R507A:    {sds:null, traslado:null, catalogo:null},
   R600a:    {sds:null, traslado:null, catalogo:null},
   R600:     {sds:null, traslado:null, catalogo:null},
   R22:      {sds:null, traslado:null, catalogo:null},
@@ -468,22 +488,24 @@ const GASES = {
   R32:{id:'R32',name:'R-32',category:'HFC',formula:'CH₂F₂',gwp:675,ashraeSafety:'A2L',normalBoilingPoint:-51.7,mw:52.0,criticalTemp:78.1,criticalPressure:57.8,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio con HFC. No mezclar con mineral.',description:'Difluorometano. Alta eficiencia energética. Reemplaza al R410A en equipos nuevos. Levemente inflamable (A2L).',applications:['ac_residencial','ac_comercial','bomba_calor'],replacementFor:['R410A'],ptData:[[-50,1.10],[-40,1.77],[-30,2.73],[-20,4.06],[-10,5.83],[0,8.13],[10,11.07],[20,14.75],[30,19.28],[40,24.78],[50,31.41],[60,39.33]]},
   R410A:{id:'R410A',name:'R-410A',category:'HFC',formula:'R32/R125 (50/50)',gwp:2088,ashraeSafety:'A1',normalBoilingPoint:-51.6,mw:72.6,criticalTemp:72.1,criticalPressure:49.0,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio con HFC. No mezclar con mineral.',description:'Mezcla casi-azeotrópica (deslizamiento <0.2°C). Estándar en AC Split residencial y comercial. En proceso de phase-down regulatorio.',applications:['ac_residencial','ac_comercial','bomba_calor'],replacementFor:[],ptData:[[-50,1.09],[-40,1.75],[-30,2.70],[-20,4.00],[-10,5.74],[0,7.99],[10,10.87],[20,14.45],[30,18.86],[40,24.22],[50,30.67],[60,38.39]]},
   R134a:{id:'R134a',name:'R-134a',category:'HFC',formula:'CH₂FCF₃',gwp:1430,ashraeSafety:'A1',normalBoilingPoint:-26.1,mw:102.0,criticalTemp:101.1,criticalPressure:40.6,aceite:'POE / PAG',aceiteISO:'ISO 46-68',aceiteNota:'POE para refrigeración industrial. PAG para sistemas automotrices.',description:'Tetrafluoroetano. Ampliamente usado en refrigeración media temperatura, automotriz y sistemas centrífugos.',applications:['heladera','camara_media','automotriz','centrifugo'],replacementFor:['R12'],ptData:[[-50,0.30],[-40,0.52],[-30,0.85],[-20,1.33],[-10,2.01],[0,2.93],[10,4.15],[20,5.72],[30,7.70],[40,10.17],[50,13.18],[60,16.82]]},
-  R404A:{id:'R404A',name:'R-404A',category:'HFC',formula:'R125/R143a/R134a (44/52/4)',gwp:3922,ashraeSafety:'A1',normalBoilingPoint:-46.6,mw:97.6,criticalTemp:72.1,criticalPressure:37.3,deslizamiento:0.7,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Verificar viscosidad según temperatura de evaporación.',description:'Mezcla casi-azeotrópica para refrigeración comercial y transporte. Alto GWP, en proceso de sustitución.',applications:['camara_media','camara_baja','transporte','comercial_supermarket'],replacementFor:['R502','R22'],ptData:[[-50,0.83],[-40,1.33],[-30,2.05],[-20,3.04],[-10,4.35],[0,6.05],[10,8.21],[20,10.91],[30,14.21],[40,18.22],[50,23.04],[60,28.78]]},
+  R404A:{id:'R404A',name:'R-404A',category:'HFC',formula:'R125/R143a/R134a (44/52/4)',gwp:3922,ashraeSafety:'A1',normalBoilingPoint:-46.6,mw:97.6,criticalTemp:72.1,criticalPressure:37.3,deslizamiento:0.7,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Verificar viscosidad según temperatura de evaporación.',description:'Mezcla casi-azeotrópica para refrigeración comercial y transporte. Alto GWP, en proceso de sustitución.',applications:['camara_media','camara_baja','transporte','comercial_supermarket','pesquera'],replacementFor:['R502','R22'],ptData:[[-50,0.83],[-40,1.33],[-30,2.05],[-20,3.04],[-10,4.35],[0,6.05],[10,8.21],[20,10.91],[30,14.21],[40,18.22],[50,23.04],[60,28.78]]},
+  R507A:{id:'R507A',name:'R-507A',category:'HFC',formula:'R125/R143a (50/50)',gwp:3985,ashraeSafety:'A1',normalBoilingPoint:-46.7,mw:98.9,criticalTemp:70.6,criticalPressure:37.1,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Cambiar aceite al reemplazar R502 o R22.',description:'Azeotropo verdadero (glide=0°C). Reemplazo directo del R502 y alternativa al R404A. Muy usado en refrigeración comercial y transporte. GWP muy alto, en proceso de sustitución.',applications:['camara_media','camara_baja','transporte','comercial_supermarket','pesquera'],replacementFor:['R502','R22','R13B1'],ptData:[[-50,0.84],[-40,1.34],[-30,2.06],[-20,3.06],[-10,4.39],[0,6.15],[10,8.41],[20,11.25],[30,14.72],[40,18.92],[50,23.93],[60,29.87]]},
+
   R1234yf:{id:'R1234yf',name:'R-1234yf',category:'HFO',formula:'CF₃CF=CH₂',gwp:4,ashraeSafety:'A2L',normalBoilingPoint:-29.4,mw:114.0,criticalTemp:94.7,criticalPressure:33.8,aceite:'PAG / POE',aceiteISO:'ISO 46-68',aceiteNota:'PAG para automotriz (norma SAE J639). POE para otras aplicaciones.',description:'Solstice® yf. HFO ultra bajo GWP. Reemplaza R134a en automotriz y refrigeración media. Levemente inflamable.',applications:['automotriz','heladera','camara_media','centrifugo'],replacementFor:['R134a'],ptData:[[-50,0.37],[-40,0.62],[-30,0.99],[-20,1.51],[-10,2.22],[0,3.16],[10,4.38],[20,5.92],[30,7.84],[40,10.18],[50,13.02],[60,16.42]]},
   R1234ze:{id:'R1234ze',name:'R-1234ze(E)',category:'HFO',formula:'CHF=CHCF₃',gwp:7,ashraeSafety:'A2L',normalBoilingPoint:-18.9,mw:114.0,criticalTemp:109.4,criticalPressure:36.4,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster recomendado para Solstice® ze.',description:'Solstice® ze. HFO ultra bajo GWP para sistemas centrífugos y chillers. Levemente inflamable.',applications:['centrifugo','chillers'],replacementFor:['R134a'],ptData:[[-50,0.21],[-40,0.37],[-30,0.61],[-20,0.97],[-10,1.47],[0,2.17],[10,3.08],[20,4.27],[30,5.78],[40,7.66],[50,9.97],[60,12.77]]},
   R1233zd:{id:'R1233zd',name:'R-1233zd(E)',category:'HFO',formula:'C₃H₂ClF₃ (trans)',gwp:1,ashraeSafety:'A1',normalBoilingPoint:18.3,mw:130.5,criticalTemp:166.5,criticalPressure:36.2,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster recomendado para Solstice® zd. Consultar ficha del compresor.',description:'Solstice® zd. GWP=1. No inflamable (A1). Baja presión de trabajo. Ideal para chillers centrífugos y bombas de calor de alta temperatura.',applications:['centrifugo','chillers','industrial'],replacementFor:['R245fa','R1234ze'],ptData:[[-50,0.03],[-40,0.06],[-30,0.11],[-20,0.19],[-10,0.31],[0,0.49],[10,0.74],[20,1.09],[30,1.55],[40,2.16],[50,2.94],[60,3.91]]},
   R407C:{id:'R407C',name:'R-407C',category:'Blend',formula:'R32/R125/R134a (23/25/52)',gwp:1774,ashraeSafety:'A1',normalBoilingPoint:-43.8,mw:86.2,criticalTemp:87.3,criticalPressure:46.3,deslizamiento:7.2,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'POE obligatorio en equipos nuevos. En retrofit de R22 puede tolerar trazas de AB residual.',description:'Mezcla zeotrópica. Reemplazo directo del R22. Deslizamiento de temperatura 7.2°C. En tabla P-T se muestra presión promedio burbuja/rocío.',applications:['ac_residencial','ac_comercial','bomba_calor','camara_media'],replacementFor:['R22'],ptData:[[-50,0.62],[-40,1.03],[-30,1.63],[-20,2.47],[-10,3.62],[0,5.14],[10,7.11],[20,9.59],[30,12.67],[40,16.45],[50,21.02],[60,26.49]]},
-  R407A:{id:'R407A',name:'R-407A',category:'Blend',formula:'R32/R125/R134a (20/40/40)',gwp:2107,ashraeSafety:'A1',normalBoilingPoint:-45.1,mw:90.2,criticalTemp:83.8,criticalPressure:45.1,deslizamiento:6.0,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Cambiar aceite al reemplazar R404A.',description:'Mezcla zeotrópica para refrigeración comercial media y baja temperatura. Alternativa al R404A con mejor eficiencia.',applications:['camara_media','camara_baja','comercial_supermarket'],replacementFor:['R404A','R22'],ptData:[[-50,0.91],[-40,1.42],[-30,2.21],[-20,3.28],[-10,4.73],[0,6.63],[10,9.09],[20,12.23],[30,16.14],[40,20.98],[50,26.84],[60,33.80]]},
-  R407F:{id:'R407F',name:'R-407F',category:'Blend',formula:'R32/R125/R134a (30/30/40)',gwp:1825,ashraeSafety:'A1',normalBoilingPoint:-46.1,mw:82.0,criticalTemp:82.7,criticalPressure:47.6,deslizamiento:5.5,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Cambiar aceite al reemplazar R22 o R404A.',description:'Reemplazo de R22 y R404A con mejor eficiencia que R407C. Mayor presión de trabajo. Deslizamiento ~5.5°C.',applications:['camara_media','camara_baja','comercial_supermarket','ac_comercial'],replacementFor:['R22','R404A'],ptData:[[-50,1.02],[-40,1.58],[-30,2.46],[-20,3.65],[-10,5.25],[0,7.33],[10,9.98],[20,13.30],[30,17.45],[40,22.56],[50,28.72],[60,36.10]]},
-  R417B:{id:'R417B',name:'R-417B',antonName:'AN22 (R-417B)',category:'Blend',formula:'R125/R134a/R600 (79/18.25/2.75)',gwp:3027,ashraeSafety:'A1',normalBoilingPoint:-44.9,mw:113.1,criticalTemp:75.2,criticalPressure:38.3,deslizamiento:1.5,aceite:'Mineral / Alquilbenceno',aceiteISO:'ISO 32-46',aceiteNota:'✅ Compatible con aceite mineral existente en sistemas R22. No requiere cambio de aceite en la mayoría de los casos.',description:'AN22 (R-417B). Reemplazo directo del R22 en AC y refrigeración media. Compatible con aceite mineral existente. Sin cambio de aceite.',applications:['ac_residencial','ac_comercial','camara_media'],replacementFor:['R22'],ptData:[[-50,0.79],[-40,1.28],[-30,1.97],[-20,2.93],[-10,4.20],[0,5.86],[10,7.96],[20,10.58],[30,13.80],[40,17.69],[50,22.36],[60,27.91]]},
+  R407A:{id:'R407A',name:'R-407A',category:'Blend',formula:'R32/R125/R134a (20/40/40)',gwp:2107,ashraeSafety:'A1',normalBoilingPoint:-45.1,mw:90.2,criticalTemp:83.8,criticalPressure:45.1,deslizamiento:6.0,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Cambiar aceite al reemplazar R404A.',description:'Mezcla zeotrópica para refrigeración comercial media y baja temperatura. Alternativa al R404A con mejor eficiencia.',applications:['camara_media','camara_baja','comercial_supermarket','pesquera'],replacementFor:['R404A','R22'],ptData:[[-50,0.91],[-40,1.42],[-30,2.21],[-20,3.28],[-10,4.73],[0,6.63],[10,9.09],[20,12.23],[30,16.14],[40,20.98],[50,26.84],[60,33.80]]},
+  R407F:{id:'R407F',name:'R-407F',category:'Blend',formula:'R32/R125/R134a (30/30/40)',gwp:1825,ashraeSafety:'A1',normalBoilingPoint:-46.1,mw:82.0,criticalTemp:82.7,criticalPressure:47.6,deslizamiento:5.5,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio. Cambiar aceite al reemplazar R22 o R404A.',description:'Reemplazo de R22 y R404A con mejor eficiencia que R407C. Mayor presión de trabajo. Deslizamiento ~5.5°C.',applications:['camara_media','camara_baja','comercial_supermarket','ac_comercial','pesquera'],replacementFor:['R22','R404A'],ptData:[[-50,1.02],[-40,1.58],[-30,2.46],[-20,3.65],[-10,5.25],[0,7.33],[10,9.98],[20,13.30],[30,17.45],[40,22.56],[50,28.72],[60,36.10]]},
+  R417B:{id:'R417B',name:'R-417B',antonName:'AN22 (R-417B)',category:'Blend',formula:'R125/R134a/R600 (79/18.25/2.75)',gwp:3027,ashraeSafety:'A1',normalBoilingPoint:-44.9,mw:113.1,criticalTemp:75.2,criticalPressure:38.3,deslizamiento:1.5,aceite:'Mineral / Alquilbenceno',aceiteISO:'ISO 32-46',aceiteNota:'✅ Compatible con aceite mineral existente en sistemas R22. No requiere cambio de aceite en la mayoría de los casos.',description:'AN22 (R-417B). Reemplazo directo del R22 en AC y refrigeración media. Compatible con aceite mineral existente. Sin cambio de aceite.',applications:['ac_residencial','ac_comercial','camara_media','pesquera'],replacementFor:['R22'],ptData:[[-50,0.79],[-40,1.28],[-30,1.97],[-20,2.93],[-10,4.20],[0,5.86],[10,7.96],[20,10.58],[30,13.80],[40,17.69],[50,22.36],[60,27.91]]},
   R417C:{id:'R417C',name:'R-417C',antonName:'YH12 (R-417C)',category:'Blend',formula:'R125/R134a/R600 (19.5/78.8/1.7)',gwp:1820,ashraeSafety:'A1',normalBoilingPoint:-26.7,mw:103.7,criticalTemp:95.4,criticalPressure:40.7,deslizamiento:4.0,aceite:'Mineral / Alquilbenceno',aceiteISO:'ISO 32-46',aceiteNota:'✅ Compatible con aceite mineral existente en sistemas R22. No requiere cambio de aceite en la mayoría de los casos.',description:'YH12 (R-417C). Reemplazo directo del R12 y R22. Alto porcentaje de R134a, presiones similares al R22. Compatible con aceite mineral.',applications:['ac_residencial','ac_comercial','camara_media'],replacementFor:['R22','R12'],ptData:[[-40,0.71],[-30,1.14],[-20,1.74],[-10,2.57],[0,3.68],[10,5.11],[20,6.94],[30,9.22],[40,12.02],[50,15.41],[60,19.47]]},
-  R448A:{id:'R448A',name:'R-448A',category:'Blend',formula:'R32/R125/R134a/R1234ze/R1234yf (26/26/21/7/20)',gwp:1386,ashraeSafety:'A1',normalBoilingPoint:-45.9,mw:86.3,criticalTemp:82.7,criticalPressure:46.0,deslizamiento:3.9,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster. Cambio de aceite obligatorio al reemplazar R404A.',description:'Solstice® N40. Reemplazo de R404A y R22 en refrigeración comercial y transporte. Buen desempeño energético.',applications:['camara_media','camara_baja','transporte','comercial_supermarket'],replacementFor:['R404A','R22','R507'],ptData:[[-50,1.10],[-40,1.90],[-30,2.94],[-20,4.35],[-10,6.23],[0,8.67],[10,11.80],[20,15.74],[30,20.60],[40,26.50],[50,33.60],[60,42.10]]},
+  R448A:{id:'R448A',name:'R-448A',category:'Blend',formula:'R32/R125/R134a/R1234ze/R1234yf (26/26/21/7/20)',gwp:1386,ashraeSafety:'A1',normalBoilingPoint:-45.9,mw:86.3,criticalTemp:82.7,criticalPressure:46.0,deslizamiento:3.9,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster. Cambio de aceite obligatorio al reemplazar R404A.',description:'Solstice® N40. Reemplazo de R404A y R22 en refrigeración comercial y transporte. Buen desempeño energético.',applications:['camara_media','camara_baja','transporte','comercial_supermarket','pesquera'],replacementFor:['R404A','R22','R507'],ptData:[[-50,1.10],[-40,1.90],[-30,2.94],[-20,4.35],[-10,6.23],[0,8.67],[10,11.80],[20,15.74],[30,20.60],[40,26.50],[50,33.60],[60,42.10]]},
   R449A:{id:'R449A',name:'R-449A',category:'Blend',formula:'R32/R125/R134a/R1234yf (24.3/24.7/25.7/25.3)',gwp:1397,ashraeSafety:'A1',normalBoilingPoint:-45.7,mw:87.2,criticalTemp:82.1,criticalPressure:45.0,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster. Cambio de aceite obligatorio al reemplazar R404A.',description:'Reemplazo de R404A y R22. Muy similar al R448A. Alta eficiencia en media y baja temperatura.',applications:['camara_media','camara_baja','transporte','comercial_supermarket'],replacementFor:['R404A','R22','R507'],ptData:[[-50,1.08],[-40,1.88],[-30,2.91],[-20,4.32],[-10,6.19],[0,8.62],[10,11.73],[20,15.65],[30,20.48],[40,26.35],[50,33.45],[60,41.90]]},
   R454B:{id:'R454B',name:'R-454B',category:'Blend',formula:'R32/R1234yf (68.9/31.1)',gwp:466,ashraeSafety:'A2L',normalBoilingPoint:-51.5,mw:62.6,criticalTemp:75.5,criticalPressure:46.3,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster recomendado para Solstice® L40X.',description:'Solstice® L40X. Reemplazo de R410A en equipos nuevos con GWP 78% menor. Levemente inflamable (A2L). Alta eficiencia.',applications:['ac_residencial','ac_comercial','bomba_calor'],replacementFor:['R410A'],ptData:[[-50,1.15],[-40,1.78],[-30,2.74],[-20,4.05],[-10,5.79],[0,8.06],[10,10.97],[20,14.60],[30,19.07],[40,24.52],[50,31.04],[60,38.76]]},
   R454C:{id:'R454C',name:'R-454C',category:'Blend',formula:'R32/R1234yf (21.5/78.5)',gwp:148,ashraeSafety:'A2L',normalBoilingPoint:-37.5,mw:90.8,criticalTemp:96.9,criticalPressure:37.8,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster obligatorio con HFO/HFC blend.',description:'Ultra bajo GWP. Reemplazo de R22 y R407C en AC. Levemente inflamable (A2L). Muy bajo impacto ambiental.',applications:['ac_residencial','ac_comercial','camara_media'],replacementFor:['R22','R407C'],ptData:[[-40,0.83],[-30,1.32],[-20,2.02],[-10,2.97],[0,4.24],[10,5.89],[20,7.99],[30,10.62],[40,13.84],[50,17.74],[60,22.30]]},
   R455A:{id:'R455A',name:'R-455A',category:'Blend',formula:'R744/R32/R1234yf (3/21.5/75.5)',gwp:148,ashraeSafety:'A2L',normalBoilingPoint:-40.0,mw:87.4,criticalTemp:97.0,criticalPressure:38.2,aceite:'POE',aceiteISO:'ISO 32-68',aceiteNota:'Polioléster recomendado para Solstice® L20. Cambiar aceite al reemplazar R404A.',description:'Solstice® L20. Ultra bajo GWP con CO₂ como componente. Reemplazo de R404A en refrigeración media y baja. Levemente inflamable.',applications:['camara_media','camara_baja','transporte','comercial_supermarket'],replacementFor:['R404A'],ptData:[[-40,0.76],[-30,1.20],[-20,1.83],[-10,2.68],[0,3.79],[10,5.23],[20,7.06],[30,9.34],[40,12.02],[50,15.41],[60,19.50]]},
   R513A:{id:'R513A',name:'R-513A',category:'Blend',formula:'R1234yf/R134a (56/44)',gwp:631,ashraeSafety:'A1',normalBoilingPoint:-29.1,mw:108.4,criticalTemp:97.0,criticalPressure:37.7,aceite:'POE / PAG',aceiteISO:'ISO 46-68',aceiteNota:'POE para refrigeración industrial. PAG para automotriz. No inflamable (A1).',description:'Reemplazo de R134a con GWP 56% menor. No inflamable (A1). Ideal para chillers centrífugos y automotriz.',applications:['automotriz','heladera','camara_media','centrifugo'],replacementFor:['R134a'],ptData:[[-40,0.60],[-30,0.97],[-20,1.50],[-10,2.21],[0,3.15],[10,4.38],[20,5.97],[30,7.97],[40,10.43],[50,13.40],[60,16.90]]},
-  R290:{id:'R290',name:'R-290',category:'HC',formula:'C₃H₈ (Propano)',gwp:3,ashraeSafety:'A3',normalBoilingPoint:-42.1,mw:44.1,criticalTemp:96.7,criticalPressure:42.5,aceite:'Mineral / PAO',aceiteISO:'ISO 32-68',aceiteNota:'Compatible con aceite mineral. PAO para bajas temperaturas.',warn:'⚠️ INFLAMABLE — Solo en sistemas certificados con carga restringida',description:'Propano. Ultra bajo GWP. Alta inflamabilidad. Requiere equipos certificados y cargas muy pequeñas (<150g).',applications:['heladera','camara_media','ac_residencial','industrial'],replacementFor:['R22','R404A','R134a'],ptData:[[-50,0.71],[-40,1.11],[-30,1.68],[-20,2.45],[-10,3.45],[0,4.74],[10,6.37],[20,8.36],[30,10.79],[40,13.69],[50,17.13],[60,21.17]]},
+  R290:{id:'R290',name:'R-290',category:'HC',formula:'C₃H₈ (Propano)',gwp:3,ashraeSafety:'A3',normalBoilingPoint:-42.1,mw:44.1,criticalTemp:96.7,criticalPressure:42.5,aceite:'Mineral / PAO',aceiteISO:'ISO 32-68',aceiteNota:'Compatible con aceite mineral. PAO para bajas temperaturas.',warn:'⚠️ INFLAMABLE — Solo en sistemas certificados con carga restringida',description:'Propano. Ultra bajo GWP. Alta inflamabilidad. Requiere equipos certificados y cargas muy pequeñas (<150g).',applications:['heladera','camara_media','ac_residencial','industrial','pesquera'],replacementFor:['R22','R404A','R134a'],ptData:[[-50,0.71],[-40,1.11],[-30,1.68],[-20,2.45],[-10,3.45],[0,4.74],[10,6.37],[20,8.36],[30,10.79],[40,13.69],[50,17.13],[60,21.17]]},
   R600:{id:'R600',name:'R-600',category:'HC',formula:'C₄H₁₀ (Butano)',gwp:3,ashraeSafety:'A3',normalBoilingPoint:-0.5,mw:58.1,criticalTemp:152.0,criticalPressure:37.9,aceite:'Mineral',aceiteISO:'ISO 22-32',aceiteNota:'Aceite mineral baja viscosidad. Solo sistemas especializados certificados.',warn:'⚠️ INFLAMABLE — Solo sistemas certificados con carga restringida',description:'Butano normal. HC natural ultra bajo GWP. Propelente, agente espumante y refrigerante en sistemas especializados.',applications:['heladera','industrial'],replacementFor:['R600a'],ptData:[[-50,0.09],[-40,0.17],[-30,0.28],[-20,0.45],[-10,0.70],[0,1.03],[10,1.48],[20,2.08],[30,2.83],[40,3.78],[50,4.96],[60,6.38]]},
   R600a:{id:'R600a',name:'R-600a',category:'HC',formula:'C₄H₁₀ (Isobutano)',gwp:3,ashraeSafety:'A3',normalBoilingPoint:-11.7,mw:58.1,criticalTemp:134.7,criticalPressure:36.3,aceite:'Mineral',aceiteISO:'ISO 22-32',aceiteNota:'Aceite mineral de baja viscosidad. Equipos herméticos vienen cargados de fábrica.',warn:'⚠️ INFLAMABLE — Solo en sistemas certificados con carga restringida',description:'Isobutano. Estándar en heladeras domésticas europeas. Ultra bajo GWP, excelente eficiencia energética.',applications:['heladera','exhibidor_comercial'],replacementFor:['R12','R134a'],ptData:[[-50,0.17],[-40,0.29],[-30,0.47],[-20,0.72],[-10,1.08],[0,1.57],[10,2.21],[20,3.02],[30,4.05],[40,5.31],[50,6.85],[60,8.69]]},
   R22:{id:'R22',name:'R-22',category:'HCFC',formula:'CHClF₂',gwp:1810,ashraeSafety:'A1',normalBoilingPoint:-40.8,mw:86.5,criticalTemp:96.2,criticalPressure:49.9,aceite:'Mineral / Alquilbenceno',aceiteISO:'ISO 32-46',aceiteNota:'⚠️ Gas en fase de eliminación. Solo para mantenimiento de equipos existentes. No en equipos nuevos.',warn:'⚠️ HCFC — Prohibida la importación para nuevos equipos (Protocolo de Montreal). Solo mantenimiento.',description:'R-22. Gas de referencia histórico para AC y refrigeración. En eliminación por Protocolo de Montreal (ODP=0.055). Referencia para comparar sustitutos.',applications:['ac_residencial','ac_comercial','camara_media'],replacementFor:[],ptData:[[-50,0.64],[-40,1.05],[-30,1.64],[-20,2.45],[-10,3.55],[0,4.97],[10,6.78],[20,9.10],[30,11.92],[40,15.33],[50,19.42],[60,24.26]]},
@@ -566,7 +588,7 @@ function GasDetail({gas,onBack}){
         <div className="chips-row">
           <span className={`chip ${chipGwp}`}>GWP {gas.gwp}</span>
           <span className={`chip ${gas.ashraeSafety==='A1'?'chip-green':gas.ashraeSafety==='A2L'?'chip-warn':'chip-danger'}`}>ASHRAE {gas.ashraeSafety}</span>
-          <span className="chip chip-neutral">Teb {gas.normalBoilingPoint}°C</span>
+          <span className="chip chip-neutral">Tev {gas.normalBoilingPoint}°C</span>
           <span className="chip chip-neutral">Tcrit {gas.criticalTemp}°C</span>
           <span className="chip chip-neutral">Pcrit {barToPsi(gas.criticalPressure).toFixed(0)} psi</span>
           <span className="chip chip-neutral">PM {gas.mw} g/mol</span>
@@ -688,7 +710,7 @@ function ComparisonScreen(){
     {label:'Categoría',fn:g=>g.category},
     {label:'GWP (AR4)',fn:g=>g.gwp,better:'lower'},
     {label:'ASHRAE',fn:g=>g.ashraeSafety},
-    {label:'Teb (°C)',fn:g=>g.normalBoilingPoint},
+    {label:'Tev (°C)',fn:g=>g.normalBoilingPoint},
     {label:'Tcrit (°C)',fn:g=>g.criticalTemp},
     {label:'Pcrit (psi)',fn:g=>barToPsi(g.criticalPressure).toFixed(0)},
     {label:'PM (g/mol)',fn:g=>g.mw},
@@ -754,14 +776,32 @@ function ComparisonScreen(){
       <div className="section">
         <div className="section-header">Propiedades Comparadas</div>
         <div style={{overflowX:'auto'}}>
-          <table className="cmp-table" style={{minWidth:count>2?count*90+110:'auto'}}>
-            <thead><tr><th style={{textAlign:'left'}}>Propiedad</th>{active.map((g,i)=><th key={g.id} style={{color:COLORS[i]}}>{g.antonName||g.name}</th>)}</tr></thead>
+          <table className="cmp-table" style={{minWidth:count===4?380:count===3?280:'auto',width:'100%'}}>
+            <thead>
+              <tr>
+                <th style={{textAlign:'left',width:90,fontSize:10}}>Propiedad</th>
+                {active.map((g,i)=>(
+                  <th key={g.id} style={{color:COLORS[i],fontSize:10,lineHeight:1.3}}>
+                    <div style={{fontWeight:900}}>{g.id}</div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
             <tbody>
               {props.map(p=>{
                 const vals=active.map(g=>p.fn(g));
                 let best=null;
                 if(p.better==='lower'){const nums=vals.filter(v=>typeof v==='number');if(nums.length)best=Math.min(...nums);}
-                return(<tr key={p.label}><td className="row-label">{p.label}</td>{vals.map((v,i)=>(<td key={i} style={{textAlign:'center',color:COLORS[i],fontWeight:600,fontSize:12}}>{v}{p.better==='lower'&&v===best&&<span style={{color:'#0a7e4f',fontSize:10}}> ✓</span>}</td>))}</tr>);
+                return(
+                  <tr key={p.label}>
+                    <td className="row-label" style={{fontSize:10,padding:'7px 4px 7px 10px',whiteSpace:'nowrap'}}>{p.label}</td>
+                    {vals.map((v,i)=>(
+                      <td key={i} style={{textAlign:'center',color:COLORS[i],fontWeight:700,fontSize:11,padding:'7px 4px'}}>
+                        {v}{p.better==='lower'&&v===best&&<span style={{color:'#0a7e4f',fontSize:9}}> ✓</span>}
+                      </td>
+                    ))}
+                  </tr>
+                );
               })}
             </tbody>
           </table>
@@ -950,6 +990,7 @@ const MOLLIER_H={
   'R32':    {hL0:200,hV0:516,Cl:1.88,Cv:0.97,Tc:78.1, Pc:57.8,hc:480},
   'R410A':  {hL0:200,hV0:418,Cl:1.57,Cv:0.88,Tc:72.1, Pc:49.0,hc:405},
   'R404A':  {hL0:200,hV0:400,Cl:1.46,Cv:0.85,Tc:72.1, Pc:37.3,hc:380},
+  'R507A':  {hL0:200,hV0:403,Cl:1.48,Cv:0.86,Tc:70.6, Pc:37.1,hc:379},
   'R407A':  {hL0:200,hV0:418,Cl:1.54,Cv:0.86,Tc:82.8, Pc:45.2,hc:400},
   'R407C':  {hL0:200,hV0:422,Cl:1.52,Cv:0.87,Tc:86.8, Pc:46.3,hc:405},
   'R407F':  {hL0:200,hV0:416,Cl:1.55,Cv:0.87,Tc:87.0, Pc:47.2,hc:404},
@@ -970,7 +1011,7 @@ const MOLLIER_H={
 
 // ── CicloScreen ───────────────────────────────────────────────────────────────
 function CicloScreen(){
-  const CICLO_IDS=['R417C','R134a','R417B','R410A','R32','R404A','R407A','R407F',
+  const CICLO_IDS=['R417C','R134a','R417B','R410A','R32','R404A','R507A','R407A','R407F',
                    'R600a','R600','R290','R449A','R454B','R454C','R455A','R513A',
                    'R1234ze','R1233zd','R1234yf'];
   const [gasId,setGasId]=React.useState('R410A');
@@ -989,7 +1030,7 @@ function CicloScreen(){
   const T1=tevap+sh; const T3=tcond-sc; const T4=tevap;
   const rc=valid?pHigh/pLow:null;
   const T2=rc?Math.round((T1+273.15)*Math.pow(rc,0.13)-273.15):null;
-  const TeK=tevap+273.15, TcK=tcond+273.15;
+  const TeK=tevap+273.15,TcK=tcond+273.15;
   const copCarnot=valid?TeK/(TcK-TeK):null;
   const copReal=copCarnot?+(copCarnot*0.55).toFixed(2):null;
   const qEvap=copReal?+(potKW*copReal).toFixed(2):null;
@@ -998,33 +1039,35 @@ function CicloScreen(){
   const tons=qEvap?+(qEvap/3.517).toFixed(2):null;
 
   const animCSS=`
-    @keyframes flowU{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
-    @keyframes flowL{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
-    @keyframes flowD{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
-    @keyframes flowR{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
-    .fU{stroke-dasharray:8 16;animation:flowU 0.8s linear infinite;}
-    .fL{stroke-dasharray:8 16;animation:flowL 0.9s linear infinite;}
-    .fD{stroke-dasharray:8 16;animation:flowD 0.85s linear infinite;}
-    .fR{stroke-dasharray:8 16;animation:flowR 1.0s linear infinite;}
+    @keyframes flowU2{0%{stroke-dashoffset:20}100%{stroke-dashoffset:0}}
+    @keyframes flowL2{0%{stroke-dashoffset:20}100%{stroke-dashoffset:0}}
+    @keyframes flowD2{0%{stroke-dashoffset:20}100%{stroke-dashoffset:0}}
+    @keyframes flowR2{0%{stroke-dashoffset:20}100%{stroke-dashoffset:0}}
+    .fU2{stroke-dasharray:5 15;animation:flowU2 0.9s linear infinite;}
+    .fL2{stroke-dasharray:5 15;animation:flowL2 1.0s linear infinite;}
+    .fD2{stroke-dasharray:5 15;animation:flowD2 0.95s linear infinite;}
+    .fR2{stroke-dasharray:5 15;animation:flowR2 1.05s linear infinite;}
   `;
 
-  function Pipe({d,color,cls,w=7}){
-    return (<>
-      <path d={d} stroke={color} strokeWidth={w+4} fill="none"
-        strokeLinecap="round" strokeLinejoin="round" opacity="0.18"/>
-      <path d={d} stroke={color} strokeWidth={w} fill="none"
-        strokeLinecap="round" strokeLinejoin="round" opacity="0.7"/>
-      <path d={d} stroke="rgba(255,255,255,0.30)" strokeWidth={w*0.35} fill="none"
-        strokeLinecap="round" strokeLinejoin="round"/>
-      <path d={d} stroke={color} strokeWidth={w} fill="none"
-        strokeLinecap="round" strokeLinejoin="round" className={cls} opacity="0.5"/>
-    </>);
-  }
+  const waveH=(x0,x1,yC,A)=>{
+    const n=10,step=(x1-x0)/n;
+    let d=`M ${x0},${yC}`;
+    for(let i=0;i<n;i++){
+      const sx=x0+i*step,sg=i%2===0?1:-1;
+      d+=` C ${(sx+step*0.42).toFixed(1)},${(yC+sg*A).toFixed(1)} ${(sx+step*0.58).toFixed(1)},${(yC+sg*A).toFixed(1)} ${(sx+step).toFixed(1)},${yC.toFixed(1)}`;
+    }
+    return d;
+  };
+
+  function Pipe({d,color,cls,w=8}){return(<>
+    <path d={d} stroke={color} strokeWidth={w+10} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.07"/>
+    <path d={d} stroke={color} strokeWidth={w} fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.92"/>
+    <path d={d} stroke="rgba(255,255,255,0.55)" strokeWidth={w*0.45} fill="none" strokeLinecap="round" strokeLinejoin="round" className={cls}/>
+  </>);}
 
   return (
     <div className="content" style={{paddingTop:8,paddingBottom:16}}>
       <div className="divider">Ciclo de Refrigeración</div>
-
       <div style={{padding:'0 12px 10px'}}>
         <div className="sim-label" style={{marginBottom:4}}>Gas Refrigerante</div>
         <select className="sim-input" value={gasId} onChange={e=>setGasId(e.target.value)} style={{marginBottom:10}}>
@@ -1034,11 +1077,11 @@ function CicloScreen(){
           })}
         </select>
         <div style={{background:'var(--card)',borderRadius:11,padding:'10px 12px 3px',border:'1px solid var(--border)'}}>
-          <NumInput lbl="T° Evaporación" val={tevap} onSet={setTevap} min={-50} max={15}  col="#1976d2"/>
-          <NumInput lbl="T° Condensación" val={tcond} onSet={setTcond} min={25}  max={70}  col="#d32f2f"/>
-          <NumInput lbl="Superheat"       val={sh}    onSet={setSh}    min={2}   max={25}  col="#1976d2" unit="K"/>
-          <NumInput lbl="Subcooling"      val={sc}    onSet={setSc}    min={0}   max={15}  col="#d32f2f" unit="K"/>
-          <NumInput lbl="Potencia comp."  val={potKW} onSet={setPotKW} min={0.5} max={50} step={0.5} col="#e65100" unit="kW"/>
+          <NumInput lbl="T° Evaporación" val={tevap} onSet={setTevap} min={-50} max={15}  col="#1565C0"/>
+          <NumInput lbl="T° Condensación" val={tcond} onSet={setTcond} min={25}  max={70}  col="#C62828"/>
+          <NumInput lbl="Superheat"       val={sh}    onSet={setSh}    min={2}   max={25}  col="#1565C0" unit="K"/>
+          <NumInput lbl="Subcooling"      val={sc}    onSet={setSc}    min={0}   max={15}  col="#C62828" unit="K"/>
+          <NumInput lbl="Potencia comp."  val={potKW} onSet={setPotKW} min={0.5} max={50} step={0.5} col="#E65100" unit="kW"/>
         </div>
       </div>
 
@@ -1047,211 +1090,116 @@ function CicloScreen(){
           <svg viewBox="0 0 380 510" width="100%" style={{display:'block'}}>
             <defs>
               <style>{animCSS}</style>
-              <linearGradient id="gBlu" x1="0" y1="1" x2="0" y2="0">
-                <stop offset="0%" stopColor="#0d47a1"/><stop offset="100%" stopColor="#42a5f5"/>
-              </linearGradient>
-              <linearGradient id="gRed" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#b71c1c"/><stop offset="100%" stopColor="#ef5350"/>
-              </linearGradient>
-              <linearGradient id="gGld" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#e65100"/><stop offset="100%" stopColor="#ffb300"/>
-              </linearGradient>
-              <linearGradient id="gCyn" x1="1" y1="0" x2="0" y2="0">
-                <stop offset="0%" stopColor="#004d40"/><stop offset="100%" stopColor="#26a69a"/>
-              </linearGradient>
-              <filter id="fSh">
-                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#1B4F8A" floodOpacity="0.15"/>
+              <pattern id="cGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(27,79,138,0.05)" strokeWidth="0.5"/>
+              </pattern>
+              <filter id="fSh2" x="-15%" y="-15%" width="130%" height="130%">
+                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#1B4F8A" floodOpacity="0.10"/>
               </filter>
-              <filter id="fC">
-                <feDropShadow dx="0" dy="3" stdDeviation="5" floodColor="#000" floodOpacity="0.13"/>
+              <filter id="fSm2" x="-15%" y="-15%" width="130%" height="130%">
+                <feDropShadow dx="0" dy="1" stdDeviation="3" floodColor="#000" floodOpacity="0.09"/>
               </filter>
             </defs>
 
-            {/* ── Fondo ── */}
-            <rect width="380" height="510" fill="transparent"/>
+            <rect width="380" height="510" fill="#F7F9FC"/>
+            <rect width="380" height="510" fill="url(#cGrid)"/>
 
-            {/* ════════════════════════════════════════════════
-                TUBERÍAS
-                Rectángulo: TL(52,94) TR(328,94) BR(328,432) BL(52,432)
-                Condensador: y=94, x=88-292
-                Compresor:   x=328, y=178-343
-                Evaporador:  y=432, x=88-292
-                Expansión:   x=52,  y=225-301
-                ════════════════════════════════════════════════ */}
+            <Pipe d="M 292,432 L 328,432 L 328,343" color="#1565C0" cls="fU2" w={8}/>
+            <Pipe d="M 328,178 L 328,94 L 292,94"  color="#C62828" cls="fL2" w={8}/>
+            <Pipe d="M 88,94 L 52,94 L 52,228"     color="#E65100" cls="fD2" w={8}/>
+            <Pipe d="M 52,298 L 52,432 L 88,432"   color="#00897B" cls="fR2" w={8}/>
 
-            {/* ASPIRACIÓN (azul): evap-right → BR corner → comp-inlet */}
-            <Pipe d="M 292,432 L 328,432 L 328,343" color="#1976d2" cls="fU"/>
-            {/* DESCARGA (rojo): comp-outlet → TR corner → cond-right */}
-            <Pipe d="M 328,178 L 328,94 L 292,94" color="#d32f2f" cls="fL"/>
-            {/* LÍQUIDO AP (dorado): cond-left → TL corner → expansion-top */}
-            <Pipe d="M 88,94 L 52,94 L 52,225" color="#f57c00" cls="fD"/>
-            {/* MIX BP (cyan): expansion-bottom → BL corner → evap-left */}
-            <Pipe d="M 52,301 L 52,432 L 88,432" color="#00897b" cls="fR"/>
+            <polygon points="323,374 328,356 333,374" fill="#1565C0"/>
+            <polygon points="208,89 192,94 208,99"    fill="#C62828"/>
+            <polygon points="47,160 52,176 57,160"    fill="#E65100"/>
+            <polygon points="170,427 186,432 170,437" fill="#00897B"/>
 
-            {/* ── Flechas de flujo ── */}
-            <polygon points="323,376 328,360 333,376" fill="#1976d2" opacity="0.95"/>
-            <polygon points="204,89 190,94 204,99" fill="#d32f2f" opacity="0.95"/>
-            <polygon points="47,158 52,174 57,158" fill="#f57c00" opacity="0.95"/>
-            <polygon points="168,427 182,432 168,437" fill="#00897b" opacity="0.95"/>
-
-            {/* ════════════════════════════════════════════════
-                CONDENSADOR — ARRIBA
-                rect x=88 y=56 w=204 h=76  ← pipe level y=94
-                ════════════════════════════════════════════════ */}
-            <rect x="88" y="56" width="204" height="76" rx="14"
-              fill="rgba(211,47,47,0.06)" stroke="#d32f2f" strokeWidth="2" filter="url(#fSh)"/>
-            {/* Serrated coil */}
-            {[0,1,2].map(r=>{
-              const y0=70+r*18,y1=y0+10;
-              return <polyline key={r} fill="none" stroke="#d32f2f" strokeWidth="1.8" opacity="0.65"
-                strokeLinejoin="round"
-                points={`92,${y0} 104,${y1} 116,${y0} 128,${y1} 140,${y0} 152,${y1} 164,${y0} 176,${y1} 188,${y0} 200,${y1} 212,${y0} 224,${y1} 236,${y0} 248,${y1} 260,${y0} 272,${y1} 284,${y0}`}/>;
-            })}
-            <text x="190" y="121" textAnchor="middle" fontSize="9.5" fontWeight="800"
-              fill="#b71c1c" letterSpacing="1.5">CONDENSADOR</text>
-            <text x="190" y="108" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#d32f2f" opacity="0.6">
-              AP · {pHighPsig.toFixed(0)} psig
-            </text>
-            {/* Heat up arrows */}
-            {[120,155,190,225,260].map(x=>(
-              <g key={x} opacity="0.35">
-                <line x1={x} y1="56" x2={x} y2="36" stroke="#d32f2f" strokeWidth="1.4" strokeLinecap="round"/>
-                <polygon points={`${x-3},40 ${x},34 ${x+3},40`} fill="#d32f2f"/>
+            {[[292,432,'1','#1565C0'],[292,94,'2','#C62828'],[88,94,'3','#E65100'],[88,432,'4','#00897B']].map(([x,y,n,col])=>(
+              <g key={n}>
+                <circle cx={x} cy={y} r={9} fill={col} stroke="white" strokeWidth="2" filter="url(#fSm2)"/>
+                <text x={x} y={y+4} textAnchor="middle" fontSize="8" fill="white" fontWeight="900">{n}</text>
               </g>
             ))}
-            {qCond&&<text x="190" y="27" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#b71c1c" opacity="0.85">
-              ☀ {qCond} kW rechazados
-            </text>}
 
-            {/* ════════════════════════════════════════════════
-                COMPRESOR — DERECHA
-                Dome: M 305,261 Q arc  y=178-261
-                Body rect: x=305 y=261 w=46 h=82 → bottom y=343
-                ════════════════════════════════════════════════ */}
-            <path d="M 306,262 Q 306,178 328,178 Q 350,178 350,262"
-              fill="rgba(230,81,0,0.07)" stroke="#e65100" strokeWidth="2" filter="url(#fC)"/>
-            <rect x="306" y="262" width="44" height="81" rx="8"
-              fill="rgba(230,81,0,0.07)" stroke="#e65100" strokeWidth="2"/>
-            {/* Piston rods */}
-            <line x1="321" y1="178" x2="321" y2="236" stroke="#ef6c00" strokeWidth="1.4" opacity="0.35"/>
-            <line x1="335" y1="178" x2="335" y2="236" stroke="#ef6c00" strokeWidth="1.4" opacity="0.35"/>
-            <circle cx="328" cy="232" r="16" fill="rgba(255,255,255,0.8)" stroke="#ef6c00" strokeWidth="1.8" filter="url(#fC)"/>
-            {/* Motor circle */}
-            <circle cx="328" cy="306" r="24" fill="rgba(255,255,255,0.85)" stroke="#ef6c00" strokeWidth="2" filter="url(#fC)"/>
-            <text x="328" y="312" textAnchor="middle" fontSize="15" fontWeight="900" fill="#e65100">M</text>
-            {/* Port connectors */}
-            <rect x="316" y="339" width="24" height="6" rx="3" fill="#1976d2" opacity="0.75"/>
-            <rect x="316" y="175" width="24" height="6" rx="3" fill="#d32f2f" opacity="0.75"/>
-            <text x="374" y="266" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#bf360c"
-              transform="rotate(90 374 266)" letterSpacing="1">COMPRESOR</text>
-            <text x="374" y="284" textAnchor="middle" fontSize="7" fill="#e65100" opacity="0.8"
-              transform="rotate(90 374 284)">{potKW} kW · {(potKW*1.341).toFixed(1)} HP</text>
-
-            {/* ════════════════════════════════════════════════
-                EVAPORADOR — ABAJO
-                rect x=88 y=394 w=204 h=76  ← pipe level y=432
-                ════════════════════════════════════════════════ */}
-            <rect x="88" y="394" width="204" height="76" rx="14"
-              fill="rgba(25,118,210,0.06)" stroke="#1976d2" strokeWidth="2" filter="url(#fSh)"/>
-            {[0,1,2].map(r=>{
-              const y0=408+r*18,y1=y0+10;
-              return <polyline key={r} fill="none" stroke="#1976d2" strokeWidth="1.8" opacity="0.65"
-                strokeLinejoin="round"
-                points={`92,${y0} 104,${y1} 116,${y0} 128,${y1} 140,${y0} 152,${y1} 164,${y0} 176,${y1} 188,${y0} 200,${y1} 212,${y0} 224,${y1} 236,${y0} 248,${y1} 260,${y0} 272,${y1} 284,${y0}`}/>;
-            })}
-            <text x="190" y="459" textAnchor="middle" fontSize="9.5" fontWeight="800"
-              fill="#0d47a1" letterSpacing="1.5">EVAPORADOR</text>
-            <text x="190" y="403" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#1976d2" opacity="0.6">
-              BP · {pLowPsig.toFixed(0)} psig
-            </text>
-            {/* Heat down arrows */}
-            {[120,155,190,225,260].map(x=>(
-              <g key={x} opacity="0.35">
-                <line x1={x} y1="470" x2={x} y2="490" stroke="#1976d2" strokeWidth="1.4" strokeLinecap="round"/>
-                <polygon points={`${x-3},484 ${x},490 ${x+3},484`} fill="#1976d2"/>
+            <rect x="88" y="56" width="204" height="76" rx="14" fill="white" stroke="#C62828" strokeWidth="1.5" filter="url(#fSh2)"/>
+            {[0,1,2].map(i=>(
+              <path key={i} d={waveH(96,280,70+i*20,8)} fill="none" stroke="#C62828" strokeWidth="1.8" opacity={0.35+i*0.1} strokeLinecap="round"/>
+            ))}
+            <text x="190" y="118" textAnchor="middle" fontSize="9" fontWeight="700" fill="#C62828" letterSpacing="1.5">CONDENSADOR</text>
+            <text x="190" y="107" textAnchor="middle" fontSize="7" fill="#C62828" opacity="0.55">AP · {pHigh.toFixed(1)} bar / {pHighPsig.toFixed(0)} psig</text>
+            {[132,162,190,218,248].map(x=>(
+              <g key={x} opacity="0.25">
+                <line x1={x} y1="56" x2={x} y2="38" stroke="#C62828" strokeWidth="1.5" strokeLinecap="round"/>
+                <polygon points={`${x-3},42 ${x},36 ${x+3},42`} fill="#C62828"/>
               </g>
             ))}
-            {qEvap&&<text x="190" y="503" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#0d47a1" opacity="0.85">
-              ❄ {qEvap} kW absorbidos
-            </text>}
+            {qCond&&<text x="190" y="28" textAnchor="middle" fontSize="8" fontWeight="600" fill="#C62828" opacity="0.65">{qCond} kW rechazados al ambiente</text>}
 
-            {/* ════════════════════════════════════════════════
-                VÁLVULA DE EXPANSIÓN — IZQUIERDA
-                Butterfly valve, center (52,263)
-                Top triangle: y=225-263 · Bottom: y=263-301
-                ════════════════════════════════════════════════ */}
-            <polygon points="30,225 74,225 52,263"
-              fill="rgba(46,125,50,0.08)" stroke="#388e3c" strokeWidth="2" filter="url(#fC)"/>
-            <polygon points="30,301 74,301 52,263"
-              fill="rgba(46,125,50,0.08)" stroke="#388e3c" strokeWidth="2"/>
-            {/* Center pin */}
-            <circle cx="52" cy="263" r="5" fill="#2e7d32"/>
-            {/* Stem */}
-            <line x1="52" y1="205" x2="52" y2="225" stroke="#388e3c" strokeWidth="1.5" opacity="0.5" strokeDasharray="3 3"/>
-            <text x="20" y="218" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#1b5e20"
-              transform="rotate(-90 20 218)" letterSpacing="1">EXPANSIÓN</text>
+            <rect x="88" y="394" width="204" height="76" rx="14" fill="white" stroke="#1565C0" strokeWidth="1.5" filter="url(#fSh2)"/>
+            {[0,1,2].map(i=>(
+              <path key={i} d={waveH(96,280,406+i*20,8)} fill="none" stroke="#1565C0" strokeWidth="1.8" opacity={0.35+i*0.1} strokeLinecap="round"/>
+            ))}
+            <text x="190" y="456" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1565C0" letterSpacing="1.5">EVAPORADOR</text>
+            <text x="190" y="401" textAnchor="middle" fontSize="7" fill="#1565C0" opacity="0.55">BP · {pLow.toFixed(1)} bar / {pLowPsig.toFixed(0)} psig</text>
+            {[132,162,190,218,248].map(x=>(
+              <g key={x} opacity="0.25">
+                <line x1={x} y1="470" x2={x} y2="488" stroke="#1565C0" strokeWidth="1.5" strokeLinecap="round"/>
+                <polygon points={`${x-3},484 ${x},490 ${x+3},484`} fill="#1565C0"/>
+              </g>
+            ))}
+            {qEvap&&<text x="190" y="503" textAnchor="middle" fontSize="8" fontWeight="600" fill="#1565C0" opacity="0.65">{qEvap} kW absorbidos del espacio</text>}
 
-            {/* ════════════════════════════════════════════════
-                ETIQUETAS DE ESTADO (4 puntos del ciclo)
-                ════════════════════════════════════════════════ */}
-            {/* T1 — gas aspirado + SH · derecho inferior */}
-            <rect x="334" y="368" width="40" height="34" rx="7" fill="rgba(25,118,210,0.10)"/>
-            <text x="354" y="381" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#1565c0">T₁={T1}°C</text>
-            <text x="354" y="395" textAnchor="middle" fontSize="7" fill="#1976d2">gas BP</text>
+            <path d="M 308,265 Q 308,180 328,180 Q 348,180 348,265" fill="white" stroke="#E65100" strokeWidth="1.5" filter="url(#fSm2)"/>
+            <rect x="308" y="265" width="40" height="78" rx="6" fill="white" stroke="#E65100" strokeWidth="1.5"/>
+            <line x1="308" y1="272" x2="348" y2="272" stroke="#E65100" strokeWidth="0.8" opacity="0.25"/>
+            <line x1="322" y1="200" x2="322" y2="238" stroke="#E65100" strokeWidth="1.2" opacity="0.20"/>
+            <line x1="334" y1="200" x2="334" y2="238" stroke="#E65100" strokeWidth="1.2" opacity="0.20"/>
+            <ellipse cx="328" cy="238" rx="13" ry="4" fill="#FFF0E0" stroke="#E65100" strokeWidth="1.2"/>
+            <circle cx="328" cy="304" r="22" fill="white" stroke="#E65100" strokeWidth="1.5" filter="url(#fSm2)"/>
+            <circle cx="328" cy="304" r="13" fill="#FFF0E0" stroke="#E65100" strokeWidth="1" opacity="0.5"/>
+            <text x="328" y="310" textAnchor="middle" fontSize="12" fontWeight="900" fill="#E65100">M</text>
+            <rect x="318" y="340" width="20" height="5" rx="2.5" fill="#1565C0" opacity="0.7"/>
+            <rect x="318" y="177" width="20" height="5" rx="2.5" fill="#C62828" opacity="0.7"/>
+            <text x="372" y="268" textAnchor="middle" fontSize="8" fontWeight="700" fill="#E65100" transform="rotate(90 372 268)" letterSpacing="1">COMPRESOR</text>
+            <text x="372" y="285" textAnchor="middle" fontSize="6.5" fill="#E65100" opacity="0.65" transform="rotate(90 372 285)">{potKW} kW · {(potKW*1.341).toFixed(1)} HP</text>
 
-            {/* T2 — descarga caliente · derecho superior */}
-            <rect x="240" y="62" width="40" height="34" rx="7" fill="rgba(211,47,47,0.10)"/>
-            <text x="260" y="75" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#c62828">T₂={T2}°C</text>
-            <text x="260" y="89" textAnchor="middle" fontSize="7" fill="#d32f2f">desc. AP</text>
+            <polygon points="30,228 74,228 52,263" fill="white" stroke="#388E3C" strokeWidth="1.5" filter="url(#fSm2)"/>
+            <polygon points="30,298 74,298 52,263" fill="white" stroke="#388E3C" strokeWidth="1.5"/>
+            <circle cx="52" cy="263" r="5" fill="#2E7D32" stroke="white" strokeWidth="1.5"/>
+            <line x1="52" y1="210" x2="52" y2="228" stroke="#388E3C" strokeWidth="1.2" opacity="0.35" strokeDasharray="3 2"/>
+            <line x1="52" y1="298" x2="52" y2="316" stroke="#388E3C" strokeWidth="1.2" opacity="0.35" strokeDasharray="3 2"/>
+            <text x="18" y="220" textAnchor="middle" fontSize="7" fontWeight="700" fill="#2E7D32" transform="rotate(-90 18 220)" letterSpacing="1">EXPANSIÓN</text>
 
-            {/* T3 — líquido sub-enfriado · izquierdo superior */}
-            <rect x="100" y="62" width="40" height="34" rx="7" fill="rgba(245,124,0,0.10)"/>
-            <text x="120" y="75" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#e65100">T₃={T3}°C</text>
-            <text x="120" y="89" textAnchor="middle" fontSize="7" fill="#f57c00">liq. AP</text>
+            {[[302,366,44,36,'1 · T₁',T1,'#1565C0'],[238,62,44,36,'2 · T₂',T2,'#C62828'],
+              [98,62,44,36,'3 · T₃',T3,'#E65100'],[60,394,44,36,'4 · T₄',T4,'#00897B']].map(([x,y,w,h,lbl,val,col])=>(
+              <g key={lbl}>
+                <rect x={x} y={y} width={w} height={h} rx="8" fill="white" stroke={col} strokeWidth="1.2" opacity="0.97" filter="url(#fSm2)"/>
+                <text x={x+w/2} y={y+13} textAnchor="middle" fontSize="7" fontWeight="600" fill={col} opacity="0.8">{lbl}</text>
+                <text x={x+w/2} y={y+27} textAnchor="middle" fontSize="10" fontWeight="800" fill={col}>{val}°C</text>
+              </g>
+            ))}
 
-            {/* T4 — mezcla bifásica · izquierdo inferior */}
-            <rect x="58" y="396" width="40" height="34" rx="7" fill="rgba(0,137,123,0.10)"/>
-            <text x="78" y="409" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#00695c">T₄={T4}°C</text>
-            <text x="78" y="423" textAnchor="middle" fontSize="7" fill="#00897b">mix BP</text>
-
-            {/* ════════════════════════════════════════════════
-                BADGE CENTRAL — RC / COP / Gas
-                Centro del rectángulo interior: x=100-295 y=165-330
-                ════════════════════════════════════════════════ */}
-            <rect x="102" y="160" width="176" height="172" rx="20"
-              fill="#1B4F8A" filter="url(#fSh)"/>
-            <rect x="102" y="160" width="176" height="172" rx="20"
-              fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5"/>
-            {/* Subtle top highlight */}
-            <rect x="116" y="162" width="148" height="4" rx="2" fill="rgba(255,255,255,0.12)"/>
-            <text x="190" y="190" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.45)"
-              fontWeight="600" letterSpacing="0.5">
-              {gas.antonName||gas.name}
-            </text>
-            <line x1="118" y1="196" x2="262" y2="196" stroke="rgba(255,255,255,0.10)" strokeWidth="1"/>
-            <text x="190" y="228" textAnchor="middle" fontSize="24" fontWeight="900" fill="white" letterSpacing="0.3">
-              RC = {rc.toFixed(2)}
-            </text>
-            <line x1="118" y1="240" x2="262" y2="240" stroke="rgba(255,255,255,0.10)" strokeWidth="1"/>
-            {copReal&&<text x="190" y="270" textAnchor="middle" fontSize="19" fontWeight="700"
-              fill="rgba(144,202,249,0.95)">
-              COP = {copReal}
-            </text>}
-            <line x1="118" y1="282" x2="262" y2="282" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
-            <text x="190" y="300" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.38)">
-              ΔT lift = {tcond-tevap}°C
-            </text>
-            {eer&&<text x="190" y="318" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.38)">
-              EER = {eer} BTU/h·W
-            </text>}
-
+            <rect x="106" y="162" width="168" height="178" rx="20" fill="white" stroke="#1B4F8A" strokeWidth="1.5" opacity="0.98" filter="url(#fSh2)"/>
+            <rect x="106" y="162" width="168" height="5" rx="4" fill="#1B4F8A"/>
+            <text x="190" y="188" textAnchor="middle" fontSize="10" fill="#1B4F8A" fontWeight="700" letterSpacing="0.5">{gas.antonName||gas.name}</text>
+            <line x1="124" y1="196" x2="256" y2="196" stroke="#EEF2F7" strokeWidth="1"/>
+            <text x="190" y="216" textAnchor="middle" fontSize="8" fill="#94A3B8" fontWeight="500">Razón de compresión</text>
+            <text x="190" y="244" textAnchor="middle" fontSize="30" fontWeight="900" fill="#1B4F8A" letterSpacing="-0.5">{rc.toFixed(2)}</text>
+            <line x1="124" y1="254" x2="256" y2="254" stroke="#EEF2F7" strokeWidth="1"/>
+            {copReal&&<>
+              <text x="190" y="273" textAnchor="middle" fontSize="8" fill="#94A3B8" fontWeight="500">COP real estimado</text>
+              <text x="190" y="298" textAnchor="middle" fontSize="24" fontWeight="800" fill="#1565C0">{copReal}</text>
+            </>}
+            <line x1="124" y1="308" x2="256" y2="308" stroke="#EEF2F7" strokeWidth="1"/>
+            <text x="156" y="326" textAnchor="middle" fontSize="8" fill="#94A3B8">ΔT {tcond-tevap}°C</text>
+            {eer&&<text x="226" y="326" textAnchor="middle" fontSize="8" fill="#94A3B8">EER {eer}</text>}
+            <line x1="190" y1="314" x2="190" y2="332" stroke="#EEF2F7" strokeWidth="1"/>
           </svg>
 
-          {/* ── Leyenda ── */}
           <div style={{display:'flex',flexWrap:'wrap',gap:'4px 16px',padding:'4px 12px 8px',justifyContent:'center'}}>
-            {[['#1976d2','Aspiración BP'],['#d32f2f','Descarga AP'],['#f57c00','Líquido AP'],['#00897b','Mezcla BP']].map(([c,l])=>(
+            {[['#1565C0','① Aspiración BP'],['#C62828','② Descarga AP'],['#E65100','③ Líquido AP'],['#00897B','④ Mezcla BP']].map(([col,l])=>(
               <div key={l} style={{display:'flex',alignItems:'center',gap:5,fontSize:10,color:'var(--sub)'}}>
-                <div style={{width:22,height:4,borderRadius:2,background:c}}/>
+                <div style={{width:22,height:4,borderRadius:2,background:col}}/>
                 <span>{l}</span>
               </div>
             ))}
@@ -1266,13 +1214,12 @@ function CicloScreen(){
       {valid&&qEvap&&(
         <div style={{margin:'0 12px 16px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:7}}>
           {[
-            {lbl:'⚡ Potencia entrada', val:`${potKW} kW`, sub:`${(potKW*1.341).toFixed(1)} HP`, c:'#e65100', bg:'rgba(230,81,0,0.06)'},
-            {lbl:'❄ Cap. frigorífica',  val:`${qEvap} kW`, sub:`${tons} TR · ${(qEvap*860).toFixed(0)} kcal/h`, c:'#1565c0', bg:'rgba(25,118,210,0.06)'},
-            {lbl:'☀ Calor rechazado',   val:`${qCond} kW`, sub:'Q_evap + W_comp', c:'#b71c1c', bg:'rgba(183,28,28,0.06)'},
-            {lbl:'📊 COP / EER',         val:String(copReal), sub:`EER: ${eer} BTU/h·W`, c:'#1B4F8A', bg:'var(--card)'},
+            {lbl:'⚡ Potencia entrada',val:`${potKW} kW`,sub:`${(potKW*1.341).toFixed(1)} HP`,c:'#E65100',bg:'rgba(230,81,0,0.05)'},
+            {lbl:'❄ Cap. frigorífica', val:`${qEvap} kW`,sub:`${tons} TR`,c:'#1565C0',bg:'rgba(21,101,192,0.05)'},
+            {lbl:'☀ Calor rechazado',  val:`${qCond} kW`,sub:'Q_evap + W_comp',c:'#C62828',bg:'rgba(198,40,40,0.05)'},
+            {lbl:'📊 COP / EER',        val:String(copReal),sub:`EER: ${eer} BTU/h·W`,c:'#1B4F8A',bg:'var(--card)'},
           ].map(x=>(
-            <div key={x.lbl} style={{background:x.bg,borderRadius:10,padding:'9px 11px',
-              border:`1.5px solid ${x.c}28`}}>
+            <div key={x.lbl} style={{background:x.bg,borderRadius:10,padding:'9px 11px',border:`1.5px solid ${x.c}22`}}>
               <div style={{fontSize:9.5,color:x.c,fontWeight:700,marginBottom:2}}>{x.lbl}</div>
               <div style={{fontSize:18,fontWeight:800,color:x.c,lineHeight:1.1}}>{x.val}</div>
               <div style={{fontSize:9,color:'var(--sub)',marginTop:2}}>{x.sub}</div>
@@ -1283,7 +1230,6 @@ function CicloScreen(){
     </div>
   );
 }
-
 
 
 // ── Carnot Screen ─────────────────────────────────────────────────────────────
@@ -1380,6 +1326,7 @@ function AplicacionScreen(){
     {id:'automotriz',        icon:'🚗', lbl:'Automotriz'},
     {id:'centrifugo',        icon:'🏗️', lbl:'Chillers / Centrífugos'},
     {id:'industrial',        icon:'🏭', lbl:'Industrial'},
+    {id:'pesquera',          icon:'🐟', lbl:'Pesquera / Barcos'},
   ];
   const CAT_COL={HFC:'#2980b9',HFO:'#27ae60',Blend:'#8e44ad',HC:'#e67e22',HCFC:'#7f8c8d'};
   const [selApp,setSelApp]=React.useState(null);
@@ -1828,6 +1775,14 @@ function LoginScreen({onLogin,onRegister}){
   const [pass,setPass]=React.useState('');
   const [err,setErr]=React.useState('');
   const [loading,setLoading]=React.useState(false);
+  const [showPw,setShowPw]=React.useState(false);
+  const [screen,setScreen]=React.useState('login');
+  const [recEmail,setRecEmail]=React.useState('');
+  const [recStep,setRecStep]=React.useState(1);
+  const [recUser,setRecUser]=React.useState(null);
+  const [newPw,setNewPw]=React.useState('');
+  const [showNewPw,setShowNewPw]=React.useState(false);
+  const [recMsg,setRecMsg]=React.useState('');
 
   const handleLogin=async()=>{
     setErr('');
@@ -1837,12 +1792,86 @@ function LoginScreen({onLogin,onRegister}){
       const users=JSON.parse(localStorage.getItem('anton_users')||'[]');
       const hashed=await hashPass(pass);
       const u=users.find(x=>x.email.toLowerCase()===email.toLowerCase()&&
-        (x.password===hashed||x.password===pass)); // backward compat
+        (x.password===hashed||x.password===pass));
       if(!u){setErr('Email o contraseña incorrectos.');setLoading(false);return;}
       onLogin({...u,password:undefined});
     }catch(e){setErr('Error al iniciar sesión.');}
     setLoading(false);
   };
+
+  const handleFindEmail=()=>{
+    setRecMsg('');
+    if(!recEmail){setRecMsg('Ingresá tu email.');return;}
+    const users=JSON.parse(localStorage.getItem('anton_users')||'[]');
+    const u=users.find(x=>x.email.toLowerCase()===recEmail.toLowerCase());
+    if(!u){setRecMsg('No encontramos ese email.');return;}
+    setRecUser(u);setRecStep(2);
+  };
+
+  const handleResetPw=async()=>{
+    setRecMsg('');
+    if(newPw.length<6){setRecMsg('Mínimo 6 caracteres.');return;}
+    try{
+      const users=JSON.parse(localStorage.getItem('anton_users')||'[]');
+      const hashed=await hashPass(newPw);
+      const idx=users.findIndex(x=>x.email.toLowerCase()===recUser.email.toLowerCase());
+      if(idx>=0){users[idx].password=hashed;localStorage.setItem('anton_users',JSON.stringify(users));}
+      setRecMsg('✅ Contraseña actualizada.');
+      setTimeout(()=>{setScreen('login');setRecStep(1);setNewPw('');setRecMsg('');},2000);
+    }catch(e){setRecMsg('Error al actualizar.');}
+  };
+
+  if(screen==='recover') return (
+    <div className="auth-screen">
+      <div className="auth-card">
+        <img src={LOGO_SRC} className="auth-logo" alt="Anton Company"/>
+        <div className="auth-title">Recuperar contraseña</div>
+        {recMsg&&<div className="auth-error" style={{background:recMsg.startsWith('✅')?'#e8f5e9':'',color:recMsg.startsWith('✅')?'#2e7d32':''}}>{recMsg}</div>}
+        {recStep===1&&(<>
+          <div className="auth-sub">Ingresá el email con el que te registraste</div>
+          <div className="auth-field">
+            <label className="auth-label">Email</label>
+            <input className="auth-input" type="email" placeholder="tu@email.com"
+              value={recEmail} onChange={e=>setRecEmail(e.target.value)}
+              onKeyDown={e=>e.key==='Enter'&&handleFindEmail()}/>
+          </div>
+          <button className="auth-btn" onClick={handleFindEmail}>Continuar</button>
+        </>)}
+        {recStep===2&&(<>
+          <div className="auth-sub">Cuenta: <strong>{recUser&&recUser.email}</strong></div>
+          {recUser&&recUser.pista&&(
+            <div style={{background:'rgba(27,79,138,0.08)',borderRadius:10,padding:'10px 12px',
+              fontSize:12,color:'var(--text)',margin:'4px 0 8px',border:'1px solid var(--border)'}}>
+              💡 <strong>Pista:</strong> {recUser.pista}
+            </div>
+          )}
+          {recUser&&!recUser.pista&&(
+            <div style={{fontSize:11,color:'var(--sub)',marginBottom:8}}>
+              No guardaste una pista. Podés crear una nueva contraseña.
+            </div>
+          )}
+          <div className="auth-field">
+            <label className="auth-label">Nueva contraseña</label>
+            <div className="pw-wrap">
+              <input className="auth-input" type={showNewPw?'text':'password'}
+                placeholder="Mínimo 6 caracteres" value={newPw}
+                onChange={e=>setNewPw(e.target.value)}
+                onKeyDown={e=>e.key==='Enter'&&handleResetPw()}
+                style={{paddingRight:40}}/>
+              <button className="pw-eye" onClick={()=>setShowNewPw(v=>!v)} tabIndex={-1}>
+                {showNewPw?'🙈':'👁️'}
+              </button>
+            </div>
+          </div>
+          <button className="auth-btn" onClick={handleResetPw}>Guardar nueva contraseña</button>
+        </>)}
+        <hr className="auth-divider"/>
+        <div className="auth-link" onClick={()=>{setScreen('login');setRecStep(1);setRecMsg('');}}>
+          ← Volver al inicio de sesión
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="auth-screen">
@@ -1859,9 +1888,19 @@ function LoginScreen({onLogin,onRegister}){
         </div>
         <div className="auth-field">
           <label className="auth-label">Contraseña</label>
-          <input className="auth-input" type="password" placeholder="••••••••"
-            value={pass} onChange={e=>setPass(e.target.value)}
-            onKeyDown={e=>e.key==='Enter'&&handleLogin()}/>
+          <div className="pw-wrap">
+            <input className="auth-input" type={showPw?'text':'password'} placeholder="••••••••"
+              value={pass} onChange={e=>setPass(e.target.value)}
+              onKeyDown={e=>e.key==='Enter'&&handleLogin()}
+              style={{paddingRight:40}}/>
+            <button className="pw-eye" onClick={()=>setShowPw(v=>!v)} tabIndex={-1}>
+              {showPw?'🙈':'👁️'}
+            </button>
+          </div>
+        </div>
+        <div style={{textAlign:'right',marginTop:-4,marginBottom:8}}>
+          <span style={{fontSize:11,color:'var(--anton)',cursor:'pointer',fontWeight:500}}
+            onClick={()=>setScreen('recover')}>¿Olvidaste tu contraseña?</span>
         </div>
         <button className="auth-btn" onClick={handleLogin} disabled={loading}>
           {loading?'Verificando…':'Ingresar'}
@@ -1874,11 +1913,12 @@ function LoginScreen({onLogin,onRegister}){
     </div>
   );
 }
-
 function RegisterScreen({onBack,onRegistered}){
-  const [form,setForm]=React.useState({name:'',email:'',company:'',role:'Técnico',password:'',confirm:''});
+  const [form,setForm]=React.useState({name:'',email:'',company:'',role:'Técnico',password:'',confirm:'',pista:''});
   const [err,setErr]=React.useState('');
   const [loading,setLoading]=React.useState(false);
+  const [showPw,setShowPw]=React.useState(false);
+  const [showPw2,setShowPw2]=React.useState(false);
   const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
 
   const handleRegister=async()=>{
@@ -1893,7 +1933,7 @@ function RegisterScreen({onBack,onRegistered}){
         setErr('Ese email ya está registrado.');setLoading(false);return;
       }
       const hashed=await hashPass(form.password);
-      const u={name:form.name,email:form.email,company:form.company,role:form.role,password:hashed};
+      const u={name:form.name,email:form.email,company:form.company,role:form.role,password:hashed,pista:form.pista};
       users.push(u);
       localStorage.setItem('anton_users',JSON.stringify(users));
       onRegistered({...u,password:undefined});
@@ -1910,54 +1950,53 @@ function RegisterScreen({onBack,onRegistered}){
         {err&&<div className="auth-error">{err}</div>}
         <div className="auth-field">
           <label className="auth-label">Nombre completo</label>
-          <input className="auth-input" type="text" placeholder="Juan García"
-            value={form.name} onChange={set('name')}/>
+          <input className="auth-input" type="text" placeholder="Juan García" value={form.name} onChange={set('name')}/>
         </div>
         <div className="auth-field">
           <label className="auth-label">Email</label>
-          <input className="auth-input" type="email" placeholder="tu@email.com"
-            value={form.email} onChange={set('email')}/>
+          <input className="auth-input" type="email" placeholder="tu@email.com" value={form.email} onChange={set('email')}/>
         </div>
         <div className="auth-field">
-          <label className="auth-label">Empresa (opcional)</label>
-          <input className="auth-input" type="text" placeholder="Empresa S.A."
-            value={form.company} onChange={set('company')}/>
+          <label className="auth-label">Empresa <span style={{color:'var(--sub)',fontSize:10,fontWeight:400}}>(opcional)</span></label>
+          <input className="auth-input" type="text" placeholder="Empresa S.A." value={form.company} onChange={set('company')}/>
         </div>
         <div className="auth-field">
           <label className="auth-label">Perfil</label>
           <select className="auth-select" value={form.role} onChange={set('role')}>
-            <option>Técnico</option>
-            <option>Técnico Senior</option>
-            <option>Ingeniero</option>
-            <option>Vendedor</option>
-            <option>Estudiante</option>
+            <option>Técnico</option><option>Técnico Senior</option>
+            <option>Ingeniero</option><option>Vendedor</option><option>Estudiante</option>
           </select>
         </div>
         <div className="auth-field">
           <label className="auth-label">Contraseña</label>
-          <input className="auth-input" type="password" placeholder="Mínimo 6 caracteres"
-            value={form.password} onChange={set('password')}/>
+          <div className="pw-wrap">
+            <input className="auth-input" type={showPw?'text':'password'} placeholder="Mínimo 6 caracteres"
+              value={form.password} onChange={set('password')} style={{paddingRight:40}}/>
+            <button className="pw-eye" onClick={()=>setShowPw(v=>!v)} tabIndex={-1}>{showPw?'🙈':'👁️'}</button>
+          </div>
         </div>
         <div className="auth-field">
           <label className="auth-label">Confirmar contraseña</label>
-          <input className="auth-input" type="password" placeholder="Repetí la contraseña"
-            value={form.confirm} onChange={set('confirm')}
-            onKeyDown={e=>e.key==='Enter'&&handleRegister()}/>
+          <div className="pw-wrap">
+            <input className="auth-input" type={showPw2?'text':'password'} placeholder="Repetí la contraseña"
+              value={form.confirm} onChange={set('confirm')} style={{paddingRight:40}}/>
+            <button className="pw-eye" onClick={()=>setShowPw2(v=>!v)} tabIndex={-1}>{showPw2?'🙈':'👁️'}</button>
+          </div>
+        </div>
+        <div className="auth-field">
+          <label className="auth-label">Pista para recuperar contraseña <span style={{color:'var(--sub)',fontSize:10,fontWeight:400}}>(opcional)</span></label>
+          <input className="auth-input" type="text" placeholder="Ej: nombre de tu mascota, ciudad natal…"
+            value={form.pista} onChange={set('pista')}/>
         </div>
         <button className="auth-btn" onClick={handleRegister} disabled={loading}>
-          {loading?'Registrando…':'Registrarme'}
+          {loading?'Registrando…':'Crear cuenta'}
         </button>
         <hr className="auth-divider"/>
-        <div className="auth-link" onClick={onBack}>
-          ¿Ya tenés cuenta? <span>Iniciar sesión</span>
-        </div>
+        <div className="auth-link" onClick={onBack}>¿Ya tenés cuenta? <span>Iniciar sesión</span></div>
       </div>
     </div>
   );
 }
-
-
-// ── Biblioteca Screen ─────────────────────────────────────────────────────────
 function BibliotecaScreen(){
   const [search,setSearch]=React.useState('');
 
@@ -2154,7 +2193,7 @@ function ProductosScreen(){
 
 // ── MollierScreen — Diagrama P-h ───────────────────────────────────────────────
 function MollierScreen(){
-  const GAS_IDS=['R410A','R134a','R32','R417C','R417B','R404A','R407A','R407C','R407F',
+  const GAS_IDS=['R410A','R134a','R32','R417C','R417B','R404A','R507A','R407A','R407C','R407F',
                  'R449A','R454B','R454C','R455A','R513A','R290','R600a','R600',
                  'R1234yf','R1234ze','R1233zd','R22'];
   const [gasId,setGasId]=React.useState('R410A');
@@ -2473,6 +2512,7 @@ function MollierScreen(){
 // ── Main App (requires auth) ───────────────────────────────────────────────────
 function MainApp({user,onLogout}){
   const [tab,setTab]=React.useState('gases');
+  const [showMore,setShowMore]=React.useState(false);
   const [selectedGas,setSelectedGas]=React.useState(null);
   const [theme,setTheme]=React.useState(()=>getTheme());
   const [menuOpen,setMenuOpen]=React.useState(false);
@@ -2488,12 +2528,19 @@ function MainApp({user,onLogout}){
 
   if(selectedGas) return <GasDetail gas={selectedGas} onBack={()=>setSelectedGas(null)}/>;
 
-  const navTabs=[
-    ['gases','🧪','Gases'],['pt','📊','P-T'],['shsc','🌡️','SH/SC'],
-    ['ciclo','🔧','Ciclo'],['mollier','📈','P-h'],['biblioteca','📁','Docs'],['carga','⚖️','Carga'],
-    ['productos','🛒','Productos'],['comparar','↔️','Comparar'],['carnot','🔄','Carnot'],
-    ['app','🔍','Aplicación'],['teoria','📚','Teoría'],
+  const primaryTabs=[
+    ['gases','🧪','Gases'],
+    ['app','🔍','Aplicación'],
+    ['comparar','↔️','Comparar'],
+    ['teoria','📚','Teoría'],
   ];
+  const moreTabs=[
+    ['pt','📊','P-T'],['ciclo','🔧','Ciclo'],
+    ['shsc','🌡️','SH/SC'],['mollier','📈','P-h'],
+    ['biblioteca','📁','Docs'],['carga','⚖️','Carga'],
+    ['productos','🛒','Productos'],['carnot','🔄','Carnot'],
+  ];
+  const moreActive=moreTabs.some(([id])=>id===tab);
 
   return (
     <div className="app" onClick={()=>menuOpen&&setMenuOpen(false)}>
@@ -2540,13 +2587,34 @@ function MainApp({user,onLogout}){
         {tab==='carga'     &&<CargaScreen/>}
         {tab==='productos' &&<ProductosScreen/>}
       </ErrorBoundary>
-      <nav className="nav">
-        {navTabs.map(([id,ico,lbl])=>(
-          <button key={id} className={`nav-item ${tab===id?'active':''}`} onClick={()=>setTab(id)}>
+      <nav className="nav" onClick={e=>e.stopPropagation()}>
+        {primaryTabs.map(([id,ico,lbl])=>(
+          <button key={id} className={`nav-item ${tab===id?'active':''}`}
+            onClick={()=>{setTab(id);setShowMore(false);}}>
             <span className="nav-icon">{ico}</span>{lbl}
           </button>
         ))}
+        <button className={`nav-item ${moreActive?'active':''}`}
+          onClick={()=>setShowMore(v=>!v)}>
+          <span className="nav-icon">{moreActive?'✶':'⋯'}</span>Más
+        </button>
       </nav>
+      {showMore&&(
+        <div className="more-overlay" onClick={()=>setShowMore(false)}>
+          <div className="more-sheet" onClick={e=>e.stopPropagation()}>
+            <div className="more-handle"/>
+            <div style={{fontSize:11,color:'var(--sub)',fontWeight:600,letterSpacing:1,textAlign:'center',marginBottom:12}}>MÁS HERRAMIENTAS</div>
+            <div className="more-grid">
+              {moreTabs.map(([id,ico,lbl])=>(
+                <button key={id} className={`more-tab-btn ${tab===id?'active':''}`}
+                  onClick={()=>{setTab(id);setShowMore(false);}}>
+                  <span className="more-tab-icon">{ico}</span>{lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

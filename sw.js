@@ -1,6 +1,6 @@
 // Anton Refrigerantes — Service Worker
 // Versión del caché: incrementar para forzar actualización
-const CACHE_NAME = 'anton-ref-v2';
+const CACHE_NAME = 'anton-ref-v3';
 
 // Archivos a cachear para uso offline
 const ASSETS = [
